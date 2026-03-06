@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INTEEGRA | Gestión</title>
+
+    <style>
+        :root {
+            --primary-dark: #064e3b;
+            --primary: #10b981;
+            --primary-hover: #059669;
+            --bg-body: #f0fdf4;
+            --text-main: #1f2937;
+            --border-color: #d1fae5;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: var(--primary-dark);
+            color: white;
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        nav { display: flex; gap: 20px; }
+        nav a {
+            color: #d1fae5;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        nav a:hover { color: var(--white); }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            padding: 40px 15px;
+        }
+
+        .card {
+            background: var(--white);
+            padding: 40px;
+            width: 100%;
+            max-width: 700px;
+            border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        h2 {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 30px;
+            color: var(--primary-dark);
+            font-weight: 700;
+        }
+
+        label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            display: block;
+            color: var(--primary-dark);
+            text-transform: uppercase;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            border: 2px solid #e5e7eb;
+            outline: none;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+            background: #f9fafb;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary);
+            background: var(--white);
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+        }
+
+        textarea { height: 120px; resize: vertical; }
+        .textarea-mediana { height: 160px; }
+        .textarea-pequena { height: 100px; }
+
+        /* Contenedor de fechas oculto por defecto */
+        #seccion-fechas {
+            display: none;
+            border-left: 4px solid var(--primary);
+            padding-left: 15px;
+            margin-bottom: 10px;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 12px;
+            background: var(--primary);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover { background: var(--primary-hover); transform: translateY(-2px); }
+
+        .switch-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 12px;
+            background: #f0fdf4;
+            border: 1px solid var(--border-color);
+        }
+
+        .toggle { position: relative; width: 70px; height: 34px; }
+        .toggle input { display: none; }
+        .toggle-track {
+            position: absolute;
+            inset: 0;
+            border-radius: 50px;
+            background: #d1d5db;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .toggle-knob {
+            position: absolute;
+            top: 4px; left: 4px;
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            background: white;
+            transition: 0.3s;
+        }
+        .toggle-text {
+            position: absolute;
+            top: 50%; transform: translateY(-50%);
+            font-size: 10px; font-weight: 900;
+            color: white; pointer-events: none;
+        }
+        .toggle-text.on { left: 10px; opacity: 0; }
+        .toggle-text.off { right: 10px; opacity: 1; color: #4b5563; }
+
+        .toggle input:checked + .toggle-track { background: var(--primary); }
+        .toggle input:checked ~ .toggle-knob { left: 40px; }
+        .toggle input:checked ~ .toggle-text.on { opacity: 1; }
+        .toggle input:checked ~ .toggle-text.off { opacity: 0; }
+
+        @media (max-width: 600px) {
+            .card { padding: 20px; border-radius: 0; }
+            .container { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">INTEEGRA</div>
+    <nav>
+        <a onclick="location.reload()">Kick Off</a>
+        <a>Configuración</a>
+        <a>Puesta en Marcha</a>
+    </nav>
+</header>
+
+<div class="container">
+    <div class="card">
+        <h2>Kick Off</h2>
+
+        <form id="formulario">
+            <label for="otp">OTP</label>
+            <input type="text" id="otp" placeholder="Ingrese código OTP" required>
+
+            <label for="factibilidad">DOCUMENTAR CHECK FACTIBILIDAD</label>
+            <textarea id="factibilidad" placeholder="Ingrese toda la documentación de factibilidad..." required></textarea>
+
+            <label for="correo_inicio">CORREO REPORTE INICIO</label>
+            <textarea id="correo_inicio" class="textarea-mediana" placeholder="Pegue aquí el correo de reporte de inicio..." required></textarea>
+
+            <label for="marcacion_oth">MARCACION OTH</label>
+            <input type="text" id="marcacion_oth" placeholder="Ingrese marcación">
+
+            <div class="switch-row">
+                <div class="switch-label">DOCUMENTACION ITEM FACTURACION</div>
+                <label class="toggle">
+                    <input type="checkbox" id="doc_item_facturacion">
+                    <span class="toggle-track"></span>
+                    <span class="toggle-knob"></span>
+                    <span class="toggle-text on">SÍ</span>
+                    <span class="toggle-text off">NO</span>
+                </label>
+            </div>
+
+            <div id="seccion-fechas">
+                <label for="fecha_compromiso">FECHA COMPROMISO</label>
+                <input type="date" id="fecha_compromiso">
+
+                <label for="fecha_programacion">FECHA PROGRAMACION</label>
+                <input type="date" id="fecha_programacion">
+
+                <label for="cod_resolucion">COD RESOLUCION 1</label>
+                <select id="cod_resolucion" required>
+                    <option value="">Seleccione COD 1</option>
+                    <option>FO SIN VISITA TECNICA</option>
+                    <option>FIBRA OPTICA</option>
+                    <option>HABILITACION DE SERVICIOS</option>
+                    <option>INSTALACION CON TERCEROS</option>
+                </select>
+
+                <label for="gerencia">GERENCIA</label>
+                <select id="gerencia" required>
+                    <option value="">Seleccione Gerencia</option>
+                    <option>PROYECTOS</option>
+                    <option>ESTANDAR</option>
+                </select>
+
+                <label for="tipo_servicio">TIPO DE SERVICIO</label>
+                <select id="tipo_servicio" required>
+                    <option value="">Seleccione Tipo Servicio</option>
+                    <option>INTERNET BANDA ANCHA</option>
+                    <option>INTERNET DEDICADO</option>
+                    <option>INTERNET SEGURO CORPORATIVO</option>
+                    <option>TELEFONIA BASICA</option>
+                    <option>MPLS</option>
+                </select>
+            </div>
+
+            <div class="switch-row">
+                <div class="switch-label">CERRADO OTP</div>
+                <label class="toggle">
+                    <input type="checkbox" id="cerrado_otp">
+                    <span class="toggle-track"></span>
+                    <span class="toggle-knob"></span>
+                    <span class="toggle-text on">SÍ</span>
+                    <span class="toggle-text off">NO</span>
+                </label>
+            </div>
+
+            <label for="cod_resolucion_otp">COD RESOLUCION 1 - OTP</label>
+            <select id="cod_resolucion_otp">
+                <option value="">Seleccione opción</option>
+                <option>PL_EXT/EN CURSO SIN INCONVENIENTE REPORTADO</option>
+                <option>PL_EXT/EN CURSO SOBRE OTP ASOCIADA</option>
+                <option>TERCEROS</option>
+                <option>HABILITACIÓN SERVICIOS</option>
+                <option>PENDIENTE EXPANSIÓN DE RED/TRONCAL</option>
+            </select>
+
+            <button type="submit">Guardar Registro</button>
+            <div class="success" id="mensaje"></div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Lógica para mostrar/ocultar fechas
+    const switchDoc = document.getElementById('doc_item_facturacion');
+    const seccionFechas = document.getElementById('seccion-fechas');
+    const inputCompromiso = document.getElementById('fecha_compromiso');
+    const inputProg = document.getElementById('fecha_programacion');
+
+    switchDoc.addEventListener('change', function() {
+        if (this.checked) {
+            seccionFechas.style.display = 'block';
+            inputCompromiso.required = true;
+            inputProg.required = true;
+            document.getElementById('cod_resolucion').required = true;
+            document.getElementById('gerencia').required = true;
+            document.getElementById('tipo_servicio').required = true;
+        } else {
+            seccionFechas.style.display = 'none';
+            inputCompromiso.required = false;
+            inputProg.required = false;
+            inputCompromiso.value = "";
+            inputProg.value = "";
+            document.getElementById('cod_resolucion').required = false;
+            document.getElementById('cod_resolucion').value = "";
+            document.getElementById('gerencia').required = false;
+            document.getElementById('gerencia').value = "";
+            document.getElementById('tipo_servicio').required = false;
+            document.getElementById('tipo_servicio').value = "";
+        }
+    });
+
+    // Envío del formulario (Mantiene tu estructura original)
+    document.getElementById("formulario").addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        const datos = {
+            otp: document.getElementById("otp").value,
+            factibilidad: document.getElementById("factibilidad").value,
+            correo_inicio: document.getElementById("correo_inicio").value,
+            marcacion_oth: document.getElementById("marcacion_oth").value,
+            documentacion_item_facturacion: switchDoc.checked ? "SI" : "NO",
+            cerrado_otp: document.getElementById("cerrado_otp").checked ? "SI" : "NO",
+            cod_resolucion_otp: document.getElementById("cod_resolucion_otp").value,
+            cod_resolucion: document.getElementById("cod_resolucion").value,
+            gerencia: document.getElementById("gerencia").value,
+            fecha_compromiso: inputCompromiso.value,
+            fecha_programacion: inputProg.value,
+            tipo_servicio: document.getElementById("tipo_servicio").value
+        };
+
+        const btn = e.target.querySelector("button");
+        btn.innerText = "Enviando...";
+        btn.disabled = true;
+
+        fetch("/guardar", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(datos)
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("mensaje").innerText = data.mensaje || "¡Guardado!";
+            e.target.reset();
+            seccionFechas.style.display = 'none'; // Resetear visibilidad
+        })
+        .catch(err => {
+            document.getElementById("mensaje").innerText = "Error al enviar.";
+        })
+        .finally(() => {
+            btn.innerText = "Guardar Registro";
+            btn.disabled = false;
+        });
+    });
+</script>
+
+</body>
+</html>
