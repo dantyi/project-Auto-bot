@@ -32,6 +32,7 @@ IMAGEN_FECHA_COMPROMISO = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\strat
 IMAGEN_FECHA_PROGRAMACION = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\fecha_programacion1.png"
 IMAGEN_TIPO_SERVICIO = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\tipo_de_servicio.png"
 IMAGEN_ESTADO = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\estado.png"
+IMAGEN_OTP_OCUPADA = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\OTPOCUPADA.png"
 
 EXCEL_PATH = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\datos.xlsx"
 ESTADO_COLUMNA = "COMPLETADO"
@@ -769,6 +770,19 @@ def copiar_pegar_otp():
         pyautogui.hotkey("ctrl", "v")
         pausa(0.3)
         pyautogui.press("enter")
+        pausa(5)
+
+        try:
+            loc_ocupada = pyautogui.locateOnScreen(IMAGEN_OTP_OCUPADA, confidence=CONFIDENCE)
+        except Exception:
+            loc_ocupada = None
+
+        if loc_ocupada:
+            print("⚠ OTP ocupada detectada → presionando Enter")
+            pyautogui.press("enter")
+            pausa(1)
+        else:
+            print("✅ OTP libre, continuando flujo normal")
 
         print("✅ OTP pegado y Enter ejecutado")
         return True
@@ -1209,10 +1223,21 @@ def ejecutar_flujo(necesita_login):
 
     ok1 = esperar_imagen_con_f2()
     ok2 = copiar_pegar_otp()
-    pausa(5)
     ok3 = detectar_flujo_y_maximizar()
     ok4 = procesar_tareas_kickoff()
     ok5 = guardar()
+
+    try:
+        loc_ocupada = pyautogui.locateOnScreen(IMAGEN_OTP_OCUPADA, confidence=CONFIDENCE)
+    except Exception:
+        loc_ocupada = None
+
+    if loc_ocupada:
+        print("⚠ OTP ocupada detectada después de guardar → presionando Enter")
+        pyautogui.press("enter")
+        pausa(1)
+    else:
+        print("✅ OTP libre luego de guardar, continuando flujo normal")
 
     try:
         loc_cierre = pyautogui.locateOnScreen(IMAGEN_CIERRE, confidence=CONFIDENCE)
@@ -1234,7 +1259,7 @@ def ejecutar_flujo(necesita_login):
             print("✅ cierre.png detectado y clickeado")
     except Exception:
         print("⚠ No se encontró cierre.png")
-
+    
     
 
     if ok1 and ok2 and ok3 and ok4 and ok5:
