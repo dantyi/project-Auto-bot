@@ -217,6 +217,13 @@
             <label for="marcacion_oth">MARCACION OTH</label>
             <input type="text" id="marcacion_oth" placeholder="Ingrese marcación">
 
+            <label for="gerencia">GERENCIA</label>
+            <select id="gerencia" required>
+                <option value="">Seleccione Gerencia</option>
+                <option>PROYECTOS</option>
+                <option>ESTANDAR</option>
+            </select>
+
             <div class="switch-row">
                 <div class="switch-label">DOCUMENTACION ITEM FACTURACION</div>
                 <label class="toggle">
@@ -242,13 +249,6 @@
                     <option>FIBRA OPTICA</option>
                     <option>HABILITACION DE SERVICIOS</option>
                     <option>INSTALACION CON TERCEROS</option>
-                </select>
-
-                <label for="gerencia">GERENCIA</label>
-                <select id="gerencia" required>
-                    <option value="">Seleccione Gerencia</option>
-                    <option>PROYECTOS</option>
-                    <option>ESTANDAR</option>
                 </select>
 
                 <label for="tipo_servicio">TIPO DE SERVICIO</label>
@@ -302,7 +302,6 @@
             inputCompromiso.required = true;
             inputProg.required = true;
             document.getElementById('cod_resolucion').required = true;
-            document.getElementById('gerencia').required = true;
             document.getElementById('tipo_servicio').required = true;
         } else {
             seccionFechas.style.display = 'none';
@@ -312,8 +311,6 @@
             inputProg.value = "";
             document.getElementById('cod_resolucion').required = false;
             document.getElementById('cod_resolucion').value = "";
-            document.getElementById('gerencia').required = false;
-            document.getElementById('gerencia').value = "";
             document.getElementById('tipo_servicio').required = false;
             document.getElementById('tipo_servicio').value = "";
         }

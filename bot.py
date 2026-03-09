@@ -600,10 +600,7 @@ def click_fecha_compromiso_y_escribir_partes(fecha_compromiso, fecha_programacio
 
     pyautogui.press("tab")
     pausa(0.2)
-    pyautogui.press("down")
-    pausa(0.2)
-    pyautogui.press("down")
-    pausa(0.2)
+    pyautogui.write("NO")
 
     pyautogui.press("tab")
     pausa(0.2)
@@ -707,6 +704,20 @@ def click_fecha_compromiso_y_escribir_partes(fecha_compromiso, fecha_programacio
 
     if not escribir_tipo_servicio_en_crm():
         return False
+    
+    pyautogui.press("tab")
+    pausa(0.2)
+    pyautogui.press("tab")
+    pausa(0.2)
+    pyautogui.press("tab")
+    pausa(0.2)
+    pyautogui.press("tab")
+    pausa(0.2)
+    pyautogui.press("tab")
+    pausa(0.2)
+    pyautogui.press("tab")
+    pausa(0.2)
+    pyautogui.write("NO")
 
     return True
 
