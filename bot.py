@@ -33,6 +33,9 @@ IMAGEN_FECHA_PROGRAMACION = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\str
 IMAGEN_TIPO_SERVICIO = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\tipo_de_servicio.png"
 IMAGEN_ESTADO = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\estado.png"
 IMAGEN_OTP_OCUPADA = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\OTPOCUPADA.png"
+IMAGEN_EDITAR_INCIDENTE = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\editar_incidente.png"
+IMAGEN_ASIGNAR_INCIDENTE = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\asignar_incidente.png"
+IMAGEN_GUARDAR_OTP = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\guardar_otp.png"
 
 EXCEL_PATH = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\datos.xlsx"
 ESTADO_COLUMNA = "COMPLETADO"
@@ -1099,13 +1102,113 @@ def abrir_item_y_preparar(location_item):
 # ==========================================
 # PROCESAR TAREAS (Kickoff / OTH / Novedades) + DOCUMENTAR
 # ==========================================
+def obtener_modificar_otp_de_excel():
+    global fila_actual_excel
+    try:
+        wb = openpyxl.load_workbook(EXCEL_PATH)
+        ws = wb.active
+        val = ws.cell(row=fila_actual_excel, column=14).value  # N = MODIFICAR_OTP
+        if val is None:
+            return ""
+        return str(val).strip().upper()
+    except Exception as e:
+        print(f"⚠ Error leyendo MODIFICAR_OTP (col N): {e}")
+        return ""
+
+def obtener_cod_resolucion_otp_de_excel():
+    global fila_actual_excel
+    try:
+        wb = openpyxl.load_workbook(EXCEL_PATH)
+        ws = wb.active
+        val = ws.cell(row=fila_actual_excel, column=13).value  # M = COD_RESOLUCION_1_OTP
+        if val is None:
+            return ""
+        return str(val).strip()
+    except Exception as e:
+        print(f"⚠ Error leyendo COD_RESOLUCION_1_OTP (col M): {e}")
+        return ""
+
+def ejecutar_modificar_otp():
+    try:
+        loc_editar = pyautogui.locateOnScreen(IMAGEN_EDITAR_INCIDENTE, confidence=CONFIDENCE)
+    except Exception:
+        loc_editar = None
+
+    if not loc_editar:
+        print("⚠ No se encontró editar_incidente.png")
+        return False
+
+    pyautogui.click(loc_editar)
+    pausa(1)
+    print("✅ editar_incidente.png clickeado")
+
+    pyautogui.press("enter")
+    pausa(0.5)
+    pyautogui.press("enter")
+    pausa(0.5)
+
+    for _ in range(16):
+        pyautogui.press("tab")
+        pausa(0.15)
+
+    cod = obtener_cod_resolucion_otp_de_excel()
+    if cod:
+        pyautogui.write(cod, interval=0.05)
+        pausa(0.3)
+        print(f"✅ COD_RESOLUCION_1_OTP escrito: {cod}")
+    else:
+        print("⚠ COD_RESOLUCION_1_OTP vacío en Excel")
+
+    loc_guardar = None
+    for intento in range(1, 3):
+        try:
+            loc_guardar = pyautogui.locateOnScreen(IMAGEN_GUARDAR_OTP, confidence=CONFIDENCE)
+        except Exception:
+            loc_guardar = None
+        if loc_guardar:
+            break
+        print(f"⚠ guardar_otp.png no encontrado, intento {intento}/2 → esperando 2s")
+        pausa(2)
+
+    if loc_guardar:
+        pyautogui.click(loc_guardar)
+        pausa(2)
+        print("✅ guardar_otp.png clickeado en modificar_otp")
+    else:
+        print("⚠ No se encontró guardar_otp.png en modificar_otp")
+        return False
+
+    try:
+        loc_asignar = pyautogui.locateOnScreen(IMAGEN_ASIGNAR_INCIDENTE, confidence=CONFIDENCE)
+    except Exception:
+        loc_asignar = None
+
+    if loc_asignar:
+        pyautogui.press("enter")
+        pausa(1)
+        pyautogui.press("enter")
+        pausa(1)
+        print("✅ asignar_incidente.png detectado → Enter ejecutado")
+    else:
+        print("⚠ asignar_incidente.png no encontrado, continuando flujo")
+
+    return True
+
 def procesar_tareas_kickoff():
     try:
+        modificar_otp = obtener_modificar_otp_de_excel()
+        if modificar_otp == "SI":
+            print("🔧 MODIFICAR_OTP = SI → ejecutando flujo editar incidente")
+            if not ejecutar_modificar_otp():
+                return False
+            return True
+        else:
+            print("⏭ MODIFICAR_OTP != SI → flujo normal")
+
         try:
             location_tareas = pyautogui.locateOnScreen(IMAGEN_TAREAS, confidence=CONFIDENCE)
         except Exception:
             location_tareas = None
-
         if location_tareas:
             pyautogui.click(location_tareas)
             pausa(1)
@@ -1259,7 +1362,7 @@ def ejecutar_flujo(necesita_login):
             print("✅ cierre.png detectado y clickeado")
     except Exception:
         print("⚠ No se encontró cierre.png")
-    
+
     
 
     if ok1 and ok2 and ok3 and ok4 and ok5:

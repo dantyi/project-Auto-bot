@@ -111,12 +111,32 @@
         .textarea-pequena { height: 100px; }
 
         /* Contenedor de fechas oculto por defecto */
-        #seccion-fechas {
+        #seccion-fechas, #seccion-cod-otp {
             display: none;
             border-left: 4px solid var(--primary);
             padding-left: 15px;
             margin-bottom: 10px;
             animation: fadeIn 0.4s ease;
+        }
+
+        .advertencia {
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            border-left: 4px solid #f97316;
+            border-radius: 10px;
+            padding: 12px 15px;
+            margin-bottom: 16px;
+            font-size: 0.85rem;
+            color: #92400e;
+            font-weight: 600;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .advertencia::before {
+            content: "⚠";
+            font-size: 1.1rem;
+            flex-shrink: 0;
         }
 
         @keyframes fadeIn {
@@ -214,6 +234,9 @@
             <label for="correo_inicio">CORREO REPORTE INICIO</label>
             <textarea id="correo_inicio" class="textarea-mediana" placeholder="Pegue aquí el correo de reporte de inicio..." required></textarea>
 
+            <label for="soporte_telefonico">SOPORTE TELEFONICO</label>
+            <textarea id="soporte_telefonico" class="textarea-pequena" placeholder="Ingrese soporte telefónico..."></textarea>
+
             <label for="marcacion_oth">MARCACION OTH</label>
             <input type="text" id="marcacion_oth" placeholder="Ingrese marcación">
 
@@ -243,7 +266,7 @@
                 <input type="date" id="fecha_programacion">
 
                 <label for="cod_resolucion">COD RESOLUCION 1</label>
-                <select id="cod_resolucion" required>
+                <select id="cod_resolucion">
                     <option value="">Seleccione COD 1</option>
                     <option>FO SIN VISITA TECNICA</option>
                     <option>FIBRA OPTICA</option>
@@ -252,7 +275,7 @@
                 </select>
 
                 <label for="tipo_servicio">TIPO DE SERVICIO</label>
-                <select id="tipo_servicio" required>
+                <select id="tipo_servicio">
                     <option value="">Seleccione Tipo Servicio</option>
                     <option>INTERNET BANDA ANCHA</option>
                     <option>INTERNET DEDICADO</option>
@@ -273,15 +296,43 @@
                 </label>
             </div>
 
-            <label for="cod_resolucion_otp">COD RESOLUCION 1 - OTP</label>
-            <select id="cod_resolucion_otp">
-                <option value="">Seleccione opción</option>
-                <option>PL_EXT/EN CURSO SIN INCONVENIENTE REPORTADO</option>
-                <option>PL_EXT/EN CURSO SOBRE OTP ASOCIADA</option>
-                <option>TERCEROS</option>
-                <option>HABILITACIÓN SERVICIOS</option>
-                <option>PENDIENTE EXPANSIÓN DE RED/TRONCAL</option>
-            </select>
+            <div class="switch-row">
+                <div class="switch-label">MODIFICAR OTP</div>
+                <label class="toggle">
+                    <input type="checkbox" id="switch_cod_otp">
+                    <span class="toggle-track"></span>
+                    <span class="toggle-knob"></span>
+                    <span class="toggle-text on">SÍ</span>
+                    <span class="toggle-text off">NO</span>
+                </label>
+            </div>
+
+            <div id="seccion-cod-otp">
+                <label for="cod_resolucion_otp">COD RESOLUCION 1 - OTP</label>
+                <select id="cod_resolucion_otp">
+                    <option value="">Seleccione opción</option>
+                    <option>PL_EXT/EN CURSO SIN INCONVENIENTE REPORTADO</option>
+                    <option>PL_EXT/EN CURSO SOBRE OTP ASOCIADA</option>
+                    <option>TERCEROS</option>
+                    <option>HABILITACIÓN SERVICIOS</option>
+                    <option>PENDIENTE EXPANSIÓN DE RED/TRONCAL</option>
+                </select>
+            </div>
+
+            <!-- Modal advertencia MODIFICAR OTP -->
+            <div id="modal-otp" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:9999; justify-content:center; align-items:center;">
+                <div style="background:#fff; border-radius:16px; padding:32px 28px; max-width:420px; width:90%; box-shadow:0 20px 40px rgba(0,0,0,0.2); text-align:center;">
+                    <div style="font-size:2.5rem; margin-bottom:12px;">⚠️</div>
+                    <h3 style="color:#92400e; margin:0 0 12px;">Advertencia</h3>
+                    <p style="color:#374151; font-size:0.95rem; margin-bottom:24px; line-height:1.6;">
+                        Por favor mantener la OTP <strong>cerrada</strong>, ya que si se encuentra abierta no podrá realizar ninguna modificación.
+                    </p>
+                    <div style="display:flex; gap:12px; justify-content:center;">
+                        <button type="button" id="modal-cancelar" style="background:#e5e7eb; color:#374151; width:auto; padding:10px 24px; font-size:0.95rem; margin-top:0;">Cancelar</button>
+                        <button type="button" id="modal-aceptar" style="width:auto; padding:10px 24px; font-size:0.95rem; margin-top:0;">Aceptar</button>
+                    </div>
+                </div>
+            </div>
 
             <button type="submit">Guardar Registro</button>
             <div class="success" id="mensaje"></div>
@@ -316,6 +367,30 @@
         }
     });
 
+    // Lógica switch MODIFICAR OTP
+    const switchCodOtp = document.getElementById('switch_cod_otp');
+    const seccionCodOtp = document.getElementById('seccion-cod-otp');
+    const modalOtp = document.getElementById('modal-otp');
+
+    switchCodOtp.addEventListener('change', function() {
+        if (this.checked) {
+            modalOtp.style.display = 'flex';
+        } else {
+            seccionCodOtp.style.display = 'none';
+            document.getElementById('cod_resolucion_otp').value = '';
+        }
+    });
+
+    document.getElementById('modal-aceptar').addEventListener('click', function() {
+        modalOtp.style.display = 'none';
+        seccionCodOtp.style.display = 'block';
+    });
+
+    document.getElementById('modal-cancelar').addEventListener('click', function() {
+        modalOtp.style.display = 'none';
+        switchCodOtp.checked = false;
+    });
+
     // Envío del formulario (Mantiene tu estructura original)
     document.getElementById("formulario").addEventListener("submit", function(e) {
         e.preventDefault();
@@ -323,11 +398,17 @@
         const datos = {
             otp: document.getElementById("otp").value,
             factibilidad: document.getElementById("factibilidad").value,
-            correo_inicio: document.getElementById("correo_inicio").value,
+            correo_inicio: (function() {
+                const correo = document.getElementById("correo_inicio").value;
+                const soporte = document.getElementById("soporte_telefonico").value;
+                if (soporte.trim()) return correo + "\n\n" + soporte;
+                return correo;
+            })(),
             marcacion_oth: document.getElementById("marcacion_oth").value,
             documentacion_item_facturacion: switchDoc.checked ? "SI" : "NO",
             cerrado_otp: document.getElementById("cerrado_otp").checked ? "SI" : "NO",
             cod_resolucion_otp: document.getElementById("cod_resolucion_otp").value,
+            modificar_otp: switchCodOtp.checked ? "SI" : "NO",
             cod_resolucion: document.getElementById("cod_resolucion").value,
             gerencia: document.getElementById("gerencia").value,
             fecha_compromiso: inputCompromiso.value,

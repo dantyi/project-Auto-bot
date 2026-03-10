@@ -30,7 +30,8 @@ def crear_excel():
             "COMPLETADO",
             "DOCUMENTACION_ITEM_FACTURACION",
             "CERRADO_OTP",
-            "COD_RESOLUCION_1_OTP"
+            "COD_RESOLUCION_1_OTP",
+            "MODIFICAR_OTP"
         ]
 
         ws.append(encabezados)
@@ -70,14 +71,15 @@ def guardar():
 
             data.get("documentacion_item_facturacion", ""),  # "SI" / "NO"
             data.get("cerrado_otp", ""),                     # "SI" / "NO"
-            data.get("cod_resolucion_otp", "")               # TEXTO
+            data.get("cod_resolucion_otp", ""),              # TEXTO
+            data.get("modificar_otp", "")                    # "SI" / "NO"
         ]
 
         ws.append(fila)
 
         # ✅ Activar wrap_text en todas las celdas de la nueva fila (ahora 13 columnas)
         nueva_fila_num = ws.max_row
-        for col in range(1, 14):  # 1..13
+        for col in range(1, 15):  # 1..14
             ws.cell(row=nueva_fila_num, column=col).alignment = Alignment(wrap_text=True)
 
         wb.save(EXCEL_FILE)
