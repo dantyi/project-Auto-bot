@@ -31,20 +31,43 @@ def crear_excel():
             "DOCUMENTACION_ITEM_FACTURACION",
             "CERRADO_OTP",
             "COD_RESOLUCION_1_OTP",
-            "MODIFICAR_OTP"
+            "MODIFICAR_OTP",
+            "TIPO",
+            "DOCUMENTACION_UM",
+            "CERRAR_OTH"
         ]
 
         ws.append(encabezados)
         wb.save(EXCEL_FILE)
 
+def agregar_columnas_faltantes():
+    """Agrega columnas nuevas al Excel si ya existe pero le faltan."""
+    nuevas = ["TIPO", "DOCUMENTACION_UM", "CERRAR_OTH"]
+    wb = load_workbook(EXCEL_FILE)
+    ws = wb.active
+    existentes = [cell.value for cell in ws[1]]
+    agregado = False
+    for col in nuevas:
+        if col not in existentes:
+            ws.cell(row=1, column=len(existentes) + 1, value=col)
+            existentes.append(col)
+            agregado = True
+    if agregado:
+        wb.save(EXCEL_FILE)
+
 crear_excel()
+agregar_columnas_faltantes()
 
 # ==========================
-# RUTA PRINCIPAL
+# RUTAS PRINCIPALES
 # ==========================
 @app.route("/")
 def index():
     return render_template("index.html")
+
+@app.route("/um")
+def um():
+    return render_template("UM.html")
 
 # ==========================
 # GUARDAR REGISTRO + ACTIVAR BOT
@@ -67,27 +90,64 @@ def guardar():
             data.get("fecha_compromiso", ""),
             data.get("fecha_programacion", ""),
             data.get("tipo_servicio", ""),
-            "" ,
+            "",
 
             data.get("documentacion_item_facturacion", ""),  # "SI" / "NO"
             data.get("cerrado_otp", ""),                     # "SI" / "NO"
             data.get("cod_resolucion_otp", ""),              # TEXTO
-            data.get("modificar_otp", "")                    # "SI" / "NO"
+            data.get("modificar_otp", ""),                   # "SI" / "NO"
+            "KICKOFF",                                       # TIPO
+            "",                                              # DOCUMENTACION_UM
+            ""                                               # CERRAR_OTH
         ]
 
         ws.append(fila)
 
-        # ✅ Activar wrap_text en todas las celdas de la nueva fila (ahora 13 columnas)
         nueva_fila_num = ws.max_row
-        for col in range(1, 15):  # 1..14
+        for col in range(1, 18):  # 1..17
             ws.cell(row=nueva_fila_num, column=col).alignment = Alignment(wrap_text=True)
 
         wb.save(EXCEL_FILE)
 
-        # 🔥 ACTIVAR BOT CUANDO SE DETECTA POST
         subprocess.Popen(["python", "bot.py"])
 
         return jsonify({"mensaje": "Guardado y BOT ejecutado correctamente"})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# ==========================
+# GUARDAR UM + ACTIVAR BOT UM
+# ==========================
+@app.route("/guardar_um", methods=["POST"])
+def guardar_um():
+    try:
+        data = request.json
+        wb = load_workbook(EXCEL_FILE)
+        ws = wb.active
+
+        fila = [
+            data.get("otp", ""),   # OTP
+            "", "", "", "", "",    # cols 2-6 vacías
+            "", "", "",            # cols 7-9 vacías
+            "",                    # COMPLETADO
+            "", "", "", "",        # cols 11-14 vacías
+            "UM",                  # TIPO
+            data.get("documentacion_um", ""),  # DOCUMENTACION_UM
+            data.get("cerrar_oth", "")          # CERRAR_OTH
+        ]
+
+        ws.append(fila)
+
+        nueva_fila_num = ws.max_row
+        for col in range(1, 18):  # 1..17
+            ws.cell(row=nueva_fila_num, column=col).alignment = Alignment(wrap_text=True)
+
+        wb.save(EXCEL_FILE)
+
+        subprocess.Popen(["python", "bot_um.py"])
+
+        return jsonify({"mensaje": "Guardado y BOT UM ejecutado correctamente"})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500

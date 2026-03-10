@@ -98,7 +98,7 @@ def dividir_texto_por_limite(texto, limite=MAX_CARACTERES_CRM):
 
     return partes
 
-# ====== LOCK PARA EVITAR 2 BOTS A LA VEZ ======
+# ====== LOCK PROPIO (evita 2 instancias de bot.py) ======
 LOCK_FILE = os.path.join(os.path.dirname(__file__), "bot.lock")
 lock_fd = None
 
@@ -119,6 +119,35 @@ def liberar_lock():
             lock_fd = None
         if os.path.exists(LOCK_FILE):
             os.remove(LOCK_FILE)
+    except:
+        pass
+
+# ====== LOCK DE COLA COMPARTIDA (bot.py + bot_um.py) ======
+COLA_LOCK_FILE = os.path.join(os.path.dirname(__file__), "cola.lock")
+cola_lock_fd = None
+
+def adquirir_cola_lock():
+    global cola_lock_fd
+    intentos = 0
+    while True:
+        try:
+            cola_lock_fd = os.open(COLA_LOCK_FILE, os.O_CREAT | os.O_EXCL | os.O_RDWR)
+            os.write(cola_lock_fd, str(os.getpid()).encode())
+            return True
+        except FileExistsError:
+            if intentos % 10 == 0:
+                print("⏳ Cola ocupada por otro bot, esperando...")
+            time.sleep(1)
+            intentos += 1
+
+def liberar_cola_lock():
+    global cola_lock_fd
+    try:
+        if cola_lock_fd is not None:
+            os.close(cola_lock_fd)
+            cola_lock_fd = None
+        if os.path.exists(COLA_LOCK_FILE):
+            os.remove(COLA_LOCK_FILE)
     except:
         pass
 
@@ -292,10 +321,22 @@ def obtener_siguiente_fila_pendiente():
         if not col_estado or not col_otp:
             return None
 
+        col_tipo = None
+        for idx, cell in enumerate(ws[1], 1):
+            if cell.value == "TIPO":
+                col_tipo = idx
+
         for row in range(2, ws.max_row + 1):
-            estado = ws.cell(row=row, column=col_estado).value
-            otp_val = ws.cell(row=row, column=col_otp).value
-            if (estado is None or str(estado).strip() == "") and (otp_val is not None and str(otp_val).strip() != ""):
+            estado   = ws.cell(row=row, column=col_estado).value
+            otp_val  = ws.cell(row=row, column=col_otp).value
+            tipo_val = ws.cell(row=row, column=col_tipo).value if col_tipo else None
+
+            pendiente  = (estado is None or str(estado).strip() == "")
+            tiene_otp  = (otp_val is not None and str(otp_val).strip() != "")
+            # Acepta KICKOFF o vacío (registros anteriores sin columna TIPO)
+            es_kickoff = (tipo_val is None or str(tipo_val).strip().upper() in ("", "KICKOFF"))
+
+            if pendiente and tiene_otp and es_kickoff:
                 return row
         return None
     except:
@@ -1399,7 +1440,11 @@ if __name__ == "__main__":
                 if siguiente:
                     inicio_espera_sin_pendientes = None
                     fila_actual_excel = siguiente
-                    ejecutar_flujo(necesita_login_global)
+                    adquirir_cola_lock()
+                    try:
+                        ejecutar_flujo(necesita_login_global)
+                    finally:
+                        liberar_cola_lock()
                     necesita_login_global = False
                     continue
 

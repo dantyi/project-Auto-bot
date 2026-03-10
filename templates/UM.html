@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INTEEGRA | UM</title>
+
+    <style>
+        :root {
+            --primary-dark: #064e3b;
+            --primary: #10b981;
+            --primary-hover: #059669;
+            --bg-body: #f0fdf4;
+            --text-main: #1f2937;
+            --border-color: #d1fae5;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: var(--primary-dark);
+            color: white;
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        nav { display: flex; gap: 20px; }
+        nav a {
+            color: #d1fae5;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        nav a:hover { color: var(--white); }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            padding: 40px 15px;
+        }
+
+        .card {
+            background: var(--white);
+            padding: 40px;
+            width: 100%;
+            max-width: 700px;
+            border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        h2 {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 30px;
+            color: var(--primary-dark);
+            font-weight: 700;
+        }
+
+        label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            display: block;
+            color: var(--primary-dark);
+            text-transform: uppercase;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            border: 2px solid #e5e7eb;
+            outline: none;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+            background: #f9fafb;
+            font-family: inherit;
+            font-size: 1rem;
+            color: var(--text-main);
+        }
+
+        input:focus, textarea:focus, select:focus {
+            border-color: var(--primary);
+            background: var(--white);
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+        }
+
+        textarea { height: 160px; resize: vertical; }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 12px;
+            background: var(--primary);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover { background: var(--primary-hover); transform: translateY(-2px); }
+
+        .switch-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 12px;
+            background: #f0fdf4;
+            border: 1px solid var(--border-color);
+        }
+
+        .toggle { position: relative; width: 70px; height: 34px; }
+        .toggle input { display: none; }
+        .toggle-track {
+            position: absolute;
+            inset: 0;
+            border-radius: 50px;
+            background: #d1d5db;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .toggle-knob {
+            position: absolute;
+            top: 4px; left: 4px;
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            background: white;
+            transition: 0.3s;
+        }
+        .toggle-text {
+            position: absolute;
+            top: 50%; transform: translateY(-50%);
+            font-size: 10px; font-weight: 900;
+            color: white; pointer-events: none;
+        }
+        .toggle-text.on { left: 10px; opacity: 0; }
+        .toggle-text.off { right: 10px; opacity: 1; color: #4b5563; }
+
+        .toggle input:checked + .toggle-track { background: var(--primary); }
+        .toggle input:checked ~ .toggle-knob { left: 40px; }
+        .toggle input:checked ~ .toggle-text.on { opacity: 1; }
+        .toggle input:checked ~ .toggle-text.off { opacity: 0; }
+
+        #mensaje {
+            text-align: center;
+            margin-top: 14px;
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
+        @media (max-width: 600px) {
+            .card { padding: 20px; border-radius: 0; }
+            .container { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">INTEEGRA</div>
+    <nav>
+        <a href="/">Kick Off</a>
+        <a href="/um">UM</a>
+        <a>Configuración</a>
+    </nav>
+</header>
+
+<div class="container">
+    <div class="card">
+        <h2>Gestión UM</h2>
+
+        <form id="formulario-um">
+
+            <label for="otp">OTP</label>
+            <input type="text" id="otp" placeholder="Ingrese código OTP" required>
+
+            <label for="documentacion">DOCUMENTACION</label>
+            <select id="documentacion" required>
+                <option value="" disabled selected>Seleccione una opción...</option>
+                <option value="OTH VISITA TECNICA">OTH VISITA TECNICA</option>
+                <option value="OTH INSTALACION DE SERVICIO">OTH INSTALACION DE SERVICIO</option>
+                <option value="OTH ACOMETIDA">OTH ACOMETIDA</option>
+                <option value="OTH DISEÑO UM">OTH DISEÑO UM</option>
+                <option value="OTP">OTP</option>
+            </select>
+
+            <label for="documentacion_um">DOCUMENTACIÓN UM</label>
+            <textarea id="documentacion_um" placeholder="Ingrese la documentación UM..." required></textarea>
+
+            <div class="switch-row">
+                <div class="switch-label">CERRAR OTH</div>
+                <label class="toggle">
+                    <input type="checkbox" id="cerrar_oth">
+                    <span class="toggle-track"></span>
+                    <span class="toggle-knob"></span>
+                    <span class="toggle-text on">SÍ</span>
+                    <span class="toggle-text off">NO</span>
+                </label>
+            </div>
+
+            <button type="submit">Guardar Registro</button>
+            <div id="mensaje"></div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.getElementById("formulario-um").addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        const datos = {
+            tipo: "UM",
+            otp: document.getElementById("otp").value,
+            documentacion: document.getElementById("documentacion").value,
+            documentacion_um: document.getElementById("documentacion_um").value,
+            cerrar_oth: document.getElementById("cerrar_oth").checked ? "SI" : "NO"
+        };
+
+        const btn = e.target.querySelector("button");
+        btn.innerText = "Enviando...";
+        btn.disabled = true;
+
+        fetch("/guardar_um", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(datos)
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("mensaje").innerText = data.mensaje || "¡Guardado!";
+            e.target.reset();
+        })
+        .catch(() => {
+            document.getElementById("mensaje").innerText = "Error al enviar.";
+        })
+        .finally(() => {
+            btn.innerText = "Guardar Registro";
+            btn.disabled = false;
+        });
+    });
+</script>
+
+</body>
+</html>
