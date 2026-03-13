@@ -1,101 +1,78 @@
-from flask import Flask, render_template, request, jsonify
-from openpyxl import Workbook, load_workbook
-from openpyxl.styles import Alignment
 import os
-import subprocess
+from flask import Flask, jsonify, send_from_directory, send_file
+from flask_cors import CORS
+from flask_socketio import SocketIO
 
-app = Flask(__name__)
-EXCEL_FILE = "datos.xlsx"
+from database import init_db
+from routes.auth_routes import auth_bp
+from routes.task_routes import tasks_bp
+from routes.user_routes import users_bp
 
-# ==========================
-# CREAR EXCEL SI NO EXISTE
-# ==========================
-def crear_excel():
-    if not os.path.exists(EXCEL_FILE):
-        wb = Workbook()
-        ws = wb.active
-        ws.title = "Registros"
+# ── App factory ───────────────────────────────────────────────────────────────
+app = Flask(__name__, static_folder=None)
 
-        # ✅ ESTRUCTURA ORIGINAL (NO SE TOCA) + ADICIONALES AL FINAL
-        encabezados = [
-            "OTP",
-            "DOCUMENTAR_CHECK_FACTIBILIDAD",
-            "CORREO_REPORTE_INICIO",
-            "MARCACION_OTH",
-            "COD_RESOLUCION_1",
-            "GERENCIA",
-            "FECHA_COMPROMISO",
-            "FECHA_PROGRAMACION",
-            "TIPO_SERVICIO",
-            "COMPLETADO",
-            "DOCUMENTACION_ITEM_FACTURACION",
-            "CERRADO_OTP",
-            "COD_RESOLUCION_1_OTP"
-        ]
+# ── CORS ──────────────────────────────────────────────────────────────────────
+CORS(
+    app,
+    resources={r"/api/*": {"origins": ["http://localhost:5173", "http://localhost:5000"]}},
+    supports_credentials=True,
+)
 
-        ws.append(encabezados)
-        wb.save(EXCEL_FILE)
+# ── SocketIO ──────────────────────────────────────────────────────────────────
+socketio = SocketIO(
+    app,
+    cors_allowed_origins=["http://localhost:5173", "http://localhost:5000"],
+    namespace="/ws",
+    async_mode="threading",
+)
 
-crear_excel()
+# ── Blueprints ────────────────────────────────────────────────────────────────
+app.register_blueprint(auth_bp)
+app.register_blueprint(tasks_bp)
+app.register_blueprint(users_bp)
 
-# ==========================
-# RUTA PRINCIPAL
-# ==========================
-@app.route("/")
-def index():
-    return render_template("index.html")
+# ── Health check ──────────────────────────────────────────────────────────────
+@app.route("/api/health", methods=["GET"])
+def health():
+    return jsonify({"status": "ok"}), 200
 
-# ==========================
-# GUARDAR REGISTRO + ACTIVAR BOT
-# ==========================
-@app.route("/guardar", methods=["POST"])
-def guardar():
-    try:
-        data = request.json
-        wb = load_workbook(EXCEL_FILE)
-        ws = wb.active
+# ── Serve React build (frontend/dist) if it exists ────────────────────────────
+FRONTEND_DIST = os.path.join(os.path.dirname(__file__), "frontend", "dist")
 
-        # ✅ FILA ORIGINAL (NO SE TOCA) + ADICIONALES AL FINAL
-        fila = [
-            data.get("otp", ""),
-            data.get("factibilidad", ""),
-            data.get("correo_inicio", ""),
-            data.get("marcacion_oth", ""),
-            data.get("cod_resolucion", ""),
-            data.get("gerencia", ""),
-            data.get("fecha_compromiso", ""),
-            data.get("fecha_programacion", ""),
-            data.get("tipo_servicio", ""),
-            "" ,
 
-            data.get("documentacion_item_facturacion", ""),  # "SI" / "NO"
-            data.get("cerrado_otp", ""),                     # "SI" / "NO"
-            data.get("cod_resolucion_otp", "")               # TEXTO
-        ]
+@app.route("/", defaults={"path": ""})
+@app.route("/<path:path>")
+def serve_react(path):
+    # Do not intercept API routes (already handled above)
+    if path.startswith("api/"):
+        return jsonify({"error": "Not found"}), 404
 
-        ws.append(fila)
+    if os.path.isdir(FRONTEND_DIST):
+        # Serve static assets (JS, CSS, images, etc.) from the dist folder
+        asset_path = os.path.join(FRONTEND_DIST, path)
+        if path and os.path.isfile(asset_path):
+            return send_from_directory(FRONTEND_DIST, path)
+        # Fall back to index.html for client-side routing
+        index_path = os.path.join(FRONTEND_DIST, "index.html")
+        if os.path.isfile(index_path):
+            return send_file(index_path)
 
-        # ✅ Activar wrap_text en todas las celdas de la nueva fila (ahora 13 columnas)
-        nueva_fila_num = ws.max_row
-        for col in range(1, 14):  # 1..13
-            ws.cell(row=nueva_fila_num, column=col).alignment = Alignment(wrap_text=True)
+    # Frontend not built yet – return a simple status message
+    return jsonify({"message": "Backend running. Frontend not built yet."}), 200
 
-        wb.save(EXCEL_FILE)
 
-        # 🔥 ACTIVAR BOT CUANDO SE DETECTA POST
-        subprocess.Popen(["python", "bot.py"])
+# ── SocketIO events ───────────────────────────────────────────────────────────
+@socketio.on("connect", namespace="/ws")
+def on_connect():
+    print("[WS] Client connected")
 
-        return jsonify({"mensaje": "Guardado y BOT ejecutado correctamente"})
 
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+@socketio.on("disconnect", namespace="/ws")
+def on_disconnect():
+    print("[WS] Client disconnected")
 
-# ==========================
-# EJECUTAR EN RED 0.0.0.0
-# ==========================
+
+# ── Initialise DB and run ─────────────────────────────────────────────────────
 if __name__ == "__main__":
-    app.run(
-        host="0.0.0.0",
-        port=5000,
-        debug=False
-    )
+    init_db()
+    socketio.run(app, host="0.0.0.0", port=5000, debug=False)
