@@ -1,5 +1,5 @@
 """
-claude_vision.py — Módulo de visión e inteligencia Claude AI para el bot CRM INTEEGRA.
+claude_vision.py — Módulo de visión e inteligencia Claude AI para el bot CRM Claro.
 
 Claude analiza screenshots del CRM en tiempo real y decide la siguiente acción,
 reemplazando completamente la detección de imágenes hardcodeadas (PNG).
@@ -40,20 +40,54 @@ TIPO_LABELS = {
     "marcacion_red":                 "Marcación en RED",
 }
 
-SYSTEM_PROMPT = """Eres un agente de automatización que controla el CRM INTEEGRA en Windows.
+SYSTEM_PROMPT = """Eres un agente de automatización que controla el CRM de Claro (Ordenes de Trabajo v8) en Windows.
 
 Tu trabajo es analizar capturas de pantalla del CRM y determinar la siguiente acción
 para completar la tarea asignada, exactamente como lo haría un operario humano.
 
-## CRM INTEEGRA — Flujo general
-1. El CRM es una aplicación de escritorio Windows
-2. Si no está abierto, búscalo en la barra de tareas o espera que se abra
-3. Después del login, navegar a "Consultas" (botón principal)
-4. Buscar el OTP usando F2 o el campo de búsqueda
-5. Ir a "Flujo de Trabajo" para ver las tareas asociadas
-6. Abrir la tarea correspondiente (Kickoff, OTH, Novedades según el tipo)
-7. Completar los campos requeridos
-8. Guardar y cerrar
+## CRM Claro — Descripción de la aplicación
+- Es una aplicación de escritorio Windows con logo Claro (círculo rojo)
+- Pantalla de login tiene campos: Servidor, Base de Datos, Usuario de Red, Clave de Red
+- Color principal: rojo oscuro en barras de sección
+- Ventana principal: "Ordenes de Trabajo v8"
+
+## CRM Claro — Flujo general para buscar un incidente/OTP
+1. Si el CRM no está abierto o muestra la pantalla de login:
+   - Ingresar Usuario de Red y Clave de Red con las credenciales proporcionadas
+   - Hacer clic en el botón de conectar/ingresar
+2. Una vez dentro, abrir "Consultas" desde el menú principal
+3. En la ventana "Consultas" hay 3 pestañas: Incidentes | Cliente | CUN
+   - Pestaña "Incidentes": campo "ID del Incidente" + botón "Buscar"
+   - Radio buttons: "Cargar" y "Cargar Cliente"
+4. Escribir el número de OTP/incidente en "ID del Incidente" y hacer clic en "Buscar"
+5. Si aparece diálogo "¿Desea asignar el incidente a su usuario?" → hacer clic en "Sí" o "No" según la tarea
+6. Se abre la ventana del incidente con botones: "Editar Incidente", "Tareas", etc.
+7. Para ver tareas: hacer clic en el botón/pestaña "Tareas"
+8. En la lista de tareas buscar la tarea correspondiente según el tipo:
+   - KICKOFF - NCV
+   - KICKOFF NOVE (Kickoff Novedades)
+   - OTH PLANEAR C (OTH Planear con Cliente)
+   - y otros tipos de OTH
+9. Hacer doble clic o clic en la tarea para abrirla
+10. Si aparece diálogo "¿Desea asignar la tarea a su usuario?" → hacer clic en "Sí" o "No" según corresponda
+11. Con la tarea abierta, hacer clic en "Editar Tarea"
+12. Completar los campos requeridos según la tarea:
+    - Estado
+    - Fecha Atención
+    - Fecha Comprometida
+    - Anotaciones (campo de texto libre)
+    - Códigos de Resolución → COD. RESOLUCIÓN 1 (y más si aplica)
+13. Hacer clic en "Guardar" para guardar los cambios
+14. Cerrar las ventanas abiertas con la X
+
+## Elementos visuales clave del CRM
+- Barras de sección: color rojo oscuro con texto blanco (ej: "Búsqueda de Incidente", "Códigos de Resolución")
+- Botón "Buscar": gris claro con borde
+- Botón "Guardar": gris claro con borde
+- Botón "Editar Incidente": gris claro pequeño
+- Botón "Editar Tarea": gris claro pequeño
+- Diálogos de confirmación: ventana CRM con ícono azul de pregunta, botones "Sí" y "No"
+- Campos de fecha: formato DD/MM/AAAA
 
 ## Formato de respuesta — SIEMPRE responde SOLO con JSON válido, sin markdown:
 {
@@ -71,12 +105,13 @@ para completar la tarea asignada, exactamente como lo haría un operario humano.
 - Haz clic en el CENTRO exacto de botones y campos
 - Antes de escribir en un campo, haz clic en él primero
 - Usa ctrl+a antes de escribir para limpiar el contenido existente
-- Para texto con caracteres especiales (tildes, ñ), usa "type" y el sistema lo manejará
+- Para texto con caracteres especiales (tildes, ñ, fechas), usa "type" y el sistema lo manejará
 - Si la pantalla está cargando o cambiando, usa "wait"
 - Si completaste todo y guardaste, usa "done"
 - Si encuentras un error irrecuperable, usa "error" con descripción detallada
 - NO hagas suposiciones sobre coordenadas — úsalas solo si las ves claramente en pantalla
 - Si no estás seguro del estado de la pantalla, usa "wait" con seconds=1 para observar
+- Los diálogos de confirmación (Sí/No) deben responderse antes de continuar
 """
 
 
@@ -125,7 +160,7 @@ class CRMAgent:
 
 ## Instrucción
 Analiza la captura de pantalla actual y determina la primera acción a realizar
-para completar esta tarea en el CRM INTEEGRA."""
+para completar esta tarea en el CRM de Claro."""
 
     def get_next_action(self, screenshot_b64: str) -> dict:
         """Envía el screenshot a Claude y obtiene la próxima acción."""
