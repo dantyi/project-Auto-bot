@@ -11,30 +11,23 @@ import win32clipboard
 # ==========================================
 # CONFIG
 # ==========================================
-CRM_PATH = r"C:\Users\dell\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Global Hitss\Global Hitss\Nuevo CRM.appref-ms"
-IMAGEN_CONSULTAS        = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\consultas.png"
-IMAGEN_FLUJO_TRABAJO    = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\flujo de trabajo.png"
-IMAGEN_CRM              = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\CRM.png"
-IMAGEN_OTP_OCUPADA      = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\OTPOCUPADA.png"
-IMAGEN_TAREAS           = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\tareas.png"
-IMAGEN_ANOTACIONES      = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\anotaciones.png"
-IMAGEN_VISITA_TECNICA   = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\Visita_tecnica.png"
-IMAGEN_OTH_INSTALACION  = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\oth_instalacion.png"
-IMAGEN_OTH_DISEÑO_UM    = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\oth_diseño_um.png"
-IMAGEN_OTH_ACOMETIDA    = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\oth_acometida.png"
-IMAGEN_FACTURACION        = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\facturacion.png"
-IMAGEN_EDITAR_INCIDENTE   = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\editar_incidente.png"
-IMAGEN_GUARDAR            = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\guardar.png"
-IMAGEN_GUARDAR_OTP        = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\guardar_otp.png"
-IMAGEN_CIERRE             = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\cierre.png"
-IMAGEN_EDITAR_TAREA       = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\editar_tarea.png"
-IMAGEN_ASIGNACION_TAREA   = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\asignacion_tarea.png"
-IMAGEN_CODIGOS_RESOLUCION = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\codigos_de_resolucion.png"
-IMAGEN_COD_RESOLUCION_1   = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\codigo_de_resolucion_1.png"
+CRM_PATH             = r"C:\Users\dell\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Global Hitss\Global Hitss\Nuevo CRM.appref-ms"
+IMAGEN_CONSULTAS     = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\consultas.png"
+IMAGEN_FLUJO_TRABAJO = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\flujo de trabajo.png"
+IMAGEN_CRM           = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\CRM.png"
+IMAGEN_OTP_OCUPADA   = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\OTPOCUPADA.png"
+IMAGEN_ANOTACIONES     = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\anotaciones.png"
+IMAGEN_GUARDAR         = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\guardar.png"
+IMAGEN_CIERRE          = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\cierre.png"
+IMAGEN_TAREAS              = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\tareas.png"
+IMAGEN_CONFIGURACION       = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\configuracion.png"
+IMAGEN_EDITAR_TAREA        = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\editar_tarea.png"
+IMAGEN_FECHA_COMPROMISO    = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\FECHA_compromiso.png"
+IMAGEN_FECHA_PROGRAMACION  = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\fecha_programacion1.png"
+IMAGEN_TIPO_SERVICIO       = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\tipo_de_servicio.png"
 
-EXCEL_PATH    = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\datos.xlsx"
+EXCEL_PATH     = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\datos.xlsx"
 ESTADO_COLUMNA = "COMPLETADO"
-
 INACTIVITY_LIMIT = 480
 CONFIDENCE = 0.87
 
@@ -42,17 +35,16 @@ crm_process = None
 last_activity_time = time.time()
 flujo_en_ejecucion = False
 lock = threading.Lock()
-
 fila_actual_excel = None
 
 pyautogui.FAILSAFE = True
 
-# ==========================================
-# LIMITE CRM (900 chars, Enter = 4)
-# ==========================================
 MAX_CARACTERES_CRM = 1000
 ENTER_COST = 4
 
+# ==========================================
+# DIVIDIR TEXTO POR LIMITE
+# ==========================================
 def dividir_texto_por_limite(texto, limite=MAX_CARACTERES_CRM):
     if texto is None:
         return []
@@ -93,8 +85,8 @@ def dividir_texto_por_limite(texto, limite=MAX_CARACTERES_CRM):
 
     return partes
 
-# ====== LOCK PROPIO (evita 2 instancias de bot_um.py) ======
-LOCK_FILE = os.path.join(os.path.dirname(__file__), "bot_um.lock")
+# ====== LOCK PROPIO ======
+LOCK_FILE = os.path.join(os.path.dirname(__file__), "bot_configuracion.lock")
 lock_fd = None
 
 def adquirir_lock():
@@ -117,7 +109,7 @@ def liberar_lock():
     except:
         pass
 
-# ====== LOCK DE COLA COMPARTIDA (bot.py + bot_um.py) ======
+# ====== LOCK DE COLA COMPARTIDA ======
 COLA_LOCK_FILE = os.path.join(os.path.dirname(__file__), "cola.lock")
 cola_lock_fd = None
 
@@ -157,7 +149,7 @@ def mostrar_escritorio():
     pausa(1)
 
 # ==========================================
-# BUSCAR CRM
+# BUSCAR / ABRIR / TRAER CRM
 # ==========================================
 def buscar_crm():
     for proc in psutil.process_iter(['pid', 'name']):
@@ -168,9 +160,6 @@ def buscar_crm():
             continue
     return None
 
-# ==========================================
-# TRAER CRM AL FRENTE
-# ==========================================
 def traer_crm_al_frente():
     ventanas = pyautogui.getAllWindows()
     for ventana in ventanas:
@@ -183,9 +172,6 @@ def traer_crm_al_frente():
     print("⚠ No se pudo traer CRM al frente")
     return False
 
-# ==========================================
-# ABRIR CRM SI NO EXISTE
-# ==========================================
 def abrir_crm_si_no_existe():
     global crm_process
     existente = buscar_crm()
@@ -207,13 +193,9 @@ def abrir_crm_si_no_existe():
     print("❌ No se pudo abrir CRM")
     return False
 
-# ==========================================
-# ESPERAR IMAGEN CON F2
-# ==========================================
 def esperar_imagen_con_f2():
     print("🔍 Buscando imagen consultas...")
     reintentos = 0
-    max_reintentos = 5
     while True:
         traer_crm_al_frente()
         try:
@@ -226,44 +208,35 @@ def esperar_imagen_con_f2():
         pyautogui.press("f2")
         pausa(2)
         reintentos += 1
-        if reintentos >= max_reintentos:
-            print("⚠ No se detectó la imagen después de 5 intentos, volviendo a intentar...")
+        if reintentos >= 5:
+            print("⚠ No se detectó la imagen después de 5 intentos, reintentando...")
             reintentos = 0
 
-# ==========================================
-# ESPERAR IMAGEN DEL CRM ANTES DE LOGIN
-# ==========================================
 def esperar_imagen_crm():
-    print("🔍 Esperando que aparezca la imagen del CRM...")
+    print("🔍 Esperando imagen del CRM...")
     while True:
         try:
             location = pyautogui.locateOnScreen(IMAGEN_CRM, confidence=CONFIDENCE)
         except Exception:
             location = None
         if location:
-            print("✅ Imagen del CRM detectada, continuando flujo")
+            print("✅ Imagen del CRM detectada")
             return True
         pausa(2)
 
 # ==========================================
-# EXCEL: ENCONTRAR SIGUIENTE FILA PENDIENTE (solo TIPO = "UM")
+# EXCEL
 # ==========================================
 def obtener_siguiente_fila_pendiente():
     try:
         wb = openpyxl.load_workbook(EXCEL_PATH)
         ws = wb.active
 
-        col_estado = None
-        col_otp    = None
-        col_tipo   = None
-
+        col_estado = col_otp = col_tipo = None
         for idx, cell in enumerate(ws[1], 1):
-            if cell.value == ESTADO_COLUMNA:
-                col_estado = idx
-            if cell.value == "OTP":
-                col_otp = idx
-            if cell.value == "TIPO":
-                col_tipo = idx
+            if cell.value == ESTADO_COLUMNA: col_estado = idx
+            if cell.value == "OTP":          col_otp    = idx
+            if cell.value == "TIPO":         col_tipo   = idx
 
         if not col_estado or not col_otp or not col_tipo:
             return None
@@ -275,22 +248,18 @@ def obtener_siguiente_fila_pendiente():
 
             pendiente = (estado is None or str(estado).strip() == "")
             tiene_otp = (otp_val is not None and str(otp_val).strip() != "")
-            es_um     = (tipo_val is not None and str(tipo_val).strip().upper() == "UM")
+            es_config = (tipo_val is not None and str(tipo_val).strip().upper() == "CONFIGURACION")
 
-            if pendiente and tiene_otp and es_um:
+            if pendiente and tiene_otp and es_config:
                 return row
         return None
     except:
         return None
 
-# ==========================================
-# EXCEL: OBTENER OTP DE UNA FILA
-# ==========================================
 def obtener_otp_de_fila(row):
     try:
         wb = openpyxl.load_workbook(EXCEL_PATH)
         ws = wb.active
-
         col_otp = None
         for idx, cell in enumerate(ws[1], 1):
             if cell.value == "OTP":
@@ -298,272 +267,121 @@ def obtener_otp_de_fila(row):
                 break
         if not col_otp:
             return None
-
         val = ws.cell(row=row, column=col_otp).value
-        if val is None:
-            return None
-        val = str(val).strip()
-        if val == "":
-            return None
-        return val
+        return str(val).strip() if val else None
     except:
         return None
 
-# ==========================================
-# EXCEL: MARCAR FILA COMO COMPLETADO/ERROR
-# ==========================================
 def marcar_fila_estado(row, valor):
     try:
         wb = openpyxl.load_workbook(EXCEL_PATH)
         ws = wb.active
-
         col_idx = None
         for idx, cell in enumerate(ws[1], 1):
             if cell.value == ESTADO_COLUMNA:
                 col_idx = idx
                 break
-
         if not col_idx:
-            print(f"⚠ No se encontró columna {ESTADO_COLUMNA} en Excel")
             return
-
         ws.cell(row=row, column=col_idx).value = valor
         wb.save(EXCEL_PATH)
         print(f"✅ Excel fila {row} marcada como {valor}")
     except Exception as e:
         print(f"⚠ Error marcando Excel: {e}")
 
+def obtener_dato_de_columna(nombre_col):
+    try:
+        wb = openpyxl.load_workbook(EXCEL_PATH)
+        ws = wb.active
+        col_idx = None
+        for idx, cell in enumerate(ws[1], 1):
+            if cell.value == nombre_col:
+                col_idx = idx
+                break
+        if not col_idx:
+            return None
+        val = ws.cell(row=fila_actual_excel, column=col_idx).value
+        return str(val).strip() if val else None
+    except Exception as e:
+        print(f"⚠ Error leyendo {nombre_col}: {e}")
+        return None
+
 # ==========================================
-# COPIAR OTP (DE LA FILA ACTUAL) Y PEGAR
+# CRM: COPIAR / PEGAR OTP
 # ==========================================
 def copiar_pegar_otp():
     global fila_actual_excel
     print("📋 Copiando OTP desde Excel y pegando...")
     try:
         if not fila_actual_excel:
-            print("⚠ No hay fila_actual_excel")
             return False
-
         otp = obtener_otp_de_fila(fila_actual_excel)
         if not otp:
-            print("⚠ OTP vacío o no encontrado en la fila actual")
             return False
-
         pyperclip.copy(otp)
         pausa(0.3)
         pyautogui.hotkey("ctrl", "v")
         pausa(0.3)
         pyautogui.press("enter")
         pausa(5)
-
         try:
             loc_ocupada = pyautogui.locateOnScreen(IMAGEN_OTP_OCUPADA, confidence=CONFIDENCE)
         except Exception:
             loc_ocupada = None
-
         if loc_ocupada:
-            print("⚠ OTP ocupada detectada → presionando Enter")
             pyautogui.press("enter")
             pausa(1)
-        else:
-            print("✅ OTP libre, continuando flujo normal")
-
-        print("✅ OTP pegado y Enter ejecutado")
+        print("✅ OTP pegado")
         return True
     except Exception as e:
         print(f"⚠ Error en copiar_pegar_otp: {e}")
         return False
 
-# ==========================================
-# DETECTAR FLUJO Y MAXIMIZAR
-# ==========================================
 def detectar_flujo_y_maximizar():
-    print("🔍 Buscando imagen flujo de trabajo...")
+    print("🔍 Buscando flujo de trabajo...")
     reintentos = 0
-    max_reintentos = 5
     while True:
         try:
             location = pyautogui.locateOnScreen(IMAGEN_FLUJO_TRABAJO, confidence=0.87)
         except Exception:
             location = None
         if location:
-            print("✅ Flujo detectado → Maximizando ventana")
+            print("✅ Flujo detectado → Maximizando")
             pyautogui.hotkey("win", "up")
             pausa(2)
             return True
         pausa(2)
         reintentos += 1
-        if reintentos >= max_reintentos:
-            print("⚠ No se detectó el flujo después de 5 intentos, volviendo a intentar...")
+        if reintentos >= 5:
+            print("⚠ No se detectó el flujo, reintentando...")
             reintentos = 0
-
-# ==========================================
-# EXCEL: OBTENER DOCUMENTACION DE LA FILA ACTUAL
-# ==========================================
-def obtener_documentacion_de_excel():
-    try:
-        wb = openpyxl.load_workbook(EXCEL_PATH)
-        ws = wb.active
-
-        col_doc = None
-        for idx, cell in enumerate(ws[1], 1):
-            if cell.value == "DOCUMENTACION":
-                col_doc = idx
-                break
-
-        if not col_doc:
-            print("⚠ No se encontró columna DOCUMENTACION en Excel")
-            return None
-
-        val = ws.cell(row=fila_actual_excel, column=col_doc).value
-        if val is None:
-            return None
-        return str(val).strip().upper()
-    except Exception as e:
-        print(f"⚠ Error leyendo DOCUMENTACION: {e}")
-        return None
-
-# ==========================================
-# EXCEL: OBTENER DOCUMENTACION_UM (texto a pegar en anotaciones)
-# ==========================================
-def obtener_documentacion_um_de_excel():
-    try:
-        wb = openpyxl.load_workbook(EXCEL_PATH)
-        ws = wb.active
-
-        col_doc = None
-        for idx, cell in enumerate(ws[1], 1):
-            if cell.value == "DOCUMENTACION_UM":
-                col_doc = idx
-                break
-
-        if not col_doc:
-            return None
-
-        val = ws.cell(row=fila_actual_excel, column=col_doc).value
-        return str(val).strip() if val else None
-    except Exception as e:
-        print(f"⚠ Error leyendo DOCUMENTACION_UM: {e}")
-        return None
 
 # ==========================================
 # GUARDAR EN CRM
 # ==========================================
 def guardar_crm():
-    print("💾 Buscando botón guardar...")
+    print("💾 Guardando en CRM...")
     try:
-        location_guardar = pyautogui.locateOnScreen(IMAGEN_GUARDAR, confidence=CONFIDENCE)
-        if location_guardar:
-            pyautogui.click(location_guardar)
+        loc = pyautogui.locateOnScreen(IMAGEN_GUARDAR, confidence=CONFIDENCE)
+        if loc:
+            pyautogui.click(loc)
             pausa(2)
-            print("✅ Guardado correctamente")
             pyautogui.press("enter")
             pausa(1)
             pyautogui.press("enter")
             pausa(1)
+            print("✅ Guardado")
             return True
-        else:
-            print("⚠ No se encontró guardar.png")
-            return False
+        print("⚠ No se encontró guardar.png")
+        return False
     except Exception as e:
-        print(f"⚠ Error en guardar_crm: {e}")
+        print(f"⚠ Error guardando: {e}")
         return False
 
 # ==========================================
-# TABS + BAJAR + PONER 0 (para editar tarea UM)
+# PEGAR TEXTO EN ANOTACIONES (CON LIMITE 900)
 # ==========================================
-def tabs_y_bajar_y_poner_cero_um():
-    pyautogui.press("enter")
-    pausa(1)
-    pyautogui.press("tab")
-    pausa(0.5)
-    pyautogui.press("tab")
-    pausa(0.2)
-    for _ in range(4):
-        pyautogui.press("tab")
-        pausa(0.15)
-    pyautogui.press("down")
-    pausa(0.2)
-    pyautogui.write("0", interval=0.05)
-    pausa(0.2)
-    pyautogui.press("tab")
-    pausa(0.2)
-
-# ==========================================
-# CODIGOS DE RESOLUCION (UM)
-# ==========================================
-def ejecutar_codigos_de_resolucion_um():
-    try:
-        loc_codigos = pyautogui.locateOnScreen(IMAGEN_CODIGOS_RESOLUCION, confidence=CONFIDENCE)
-    except Exception:
-        loc_codigos = None
-
-    if not loc_codigos:
-        print("⚠ No se encontró codigos_de_resolucion.png")
-        return False
-
-    pyautogui.click(loc_codigos)
-    pausa(0.6)
-
-    try:
-        loc = pyautogui.locateOnScreen(IMAGEN_COD_RESOLUCION_1, confidence=CONFIDENCE)
-    except Exception:
-        loc = None
-
-    if not loc:
-        print("⚠ No se encontró codigo_de_resolucion_1.png")
-        return False
-
-    x, y = pyautogui.center(loc)
-    pyautogui.click(x + 20, y)
-    pausa(0.4)
-    pyautogui.press("tab")
-    pausa(0.35)
-    return True
-
-# ==========================================
-# ABRIR ITEM OTH + PREPARAR (doble click, editar, tabs, codigos, asignacion)
-# ==========================================
-def abrir_item_y_preparar_um(location_item):
-    if not location_item:
-        return False
-
-    pyautogui.click(location_item)
-    pyautogui.click(location_item)
-    pausa(3)
-
-    pyautogui.hotkey("win", "up")
-    pausa(1)
-
-    try:
-        loc_editar = pyautogui.locateOnScreen(IMAGEN_EDITAR_TAREA, confidence=CONFIDENCE)
-    except Exception:
-        loc_editar = None
-
-    if not loc_editar:
-        print("⚠ No se encontró editar_tarea.png")
-        return False
-
-    pyautogui.click(loc_editar)
-    pausa(1)
-
-    try:
-        loc_asig = pyautogui.locateOnScreen(IMAGEN_ASIGNACION_TAREA, confidence=CONFIDENCE)
-    except Exception:
-        loc_asig = None
-    if loc_asig:
-        pyautogui.click(loc_asig)
-        pyautogui.press("enter")
-        pausa(5)
-    else:
-        print("⚠ No se encontró asignacion_tarea.png")
-
-    return True
-
-# ==========================================
-# PEGAR TEXTO EN ANOTACIONES (CON LIMITE 900 + REINGRESO)
-# ==========================================
-def pegar_texto_anotaciones_um(texto, location_item):
+def pegar_texto_en_anotaciones(texto, location_item):
     if texto is None or str(texto).strip() == "":
         return True
 
@@ -574,17 +392,16 @@ def pegar_texto_anotaciones_um(texto, location_item):
 
     for i, parte in enumerate(partes):
         try:
-            location_anotaciones = pyautogui.locateOnScreen(IMAGEN_ANOTACIONES, confidence=CONFIDENCE)
+            loc_anot = pyautogui.locateOnScreen(IMAGEN_ANOTACIONES, confidence=CONFIDENCE)
         except Exception:
-            location_anotaciones = None
+            loc_anot = None
 
-        if not location_anotaciones:
+        if not loc_anot:
             print("⚠ No se encontró anotaciones.png")
             return False
 
-        x, y = pyautogui.center(location_anotaciones)
-        pyautogui.moveTo(x + 20, y + 10)
-        pyautogui.click()
+        x, y = pyautogui.center(loc_anot)
+        pyautogui.click(x + 20, y + 10)
         pausa(1)
 
         parte = str(parte).replace('\r\n', '\n').replace('\r', '\n')
@@ -598,6 +415,7 @@ def pegar_texto_anotaciones_um(texto, location_item):
                 win32clipboard.CloseClipboard()
                 pyautogui.hotkey("ctrl", "v")
                 pausa(0.1)
+
             if j < len(lineas) - 1:
                 pyautogui.press("enter")
                 pausa(0.1)
@@ -622,6 +440,8 @@ def pegar_texto_anotaciones_um(texto, location_item):
             pausa(4)
 
             print(f"🔁 Reingresando con coordenadas originales: x={x_item}, y={y_item}")
+            pyautogui.scroll(-2)
+            pausa(2)
             pyautogui.click(x_item, y_item)
             pyautogui.click(x_item, y_item)
             pausa(5)
@@ -633,150 +453,189 @@ def pegar_texto_anotaciones_um(texto, location_item):
                 loc_editar = pyautogui.locateOnScreen(IMAGEN_EDITAR_TAREA, confidence=CONFIDENCE)
                 if loc_editar:
                     pyautogui.click(loc_editar)
-                    pausa(0.7)
-                    ejecutar_codigos_de_resolucion_um()
-            except Exception:
+                    pausa(1)
+                    pyautogui.press("enter")
+                    pausa(1)
+            except:
                 print("⚠ No se encontró editar_tarea.png en reingreso")
 
             pausa(2)
 
-    print("✅ Documentación UM pegada en anotaciones")
+    print("✅ Texto pegado en anotaciones")
     return True
 
 # ==========================================
-# PROCESAR TAREAS UM
+# ITEMS DE FACTURACION (sin escribir fechas, solo ESC y navegar)
 # ==========================================
-def procesar_tareas_um():
-    tipo_doc = obtener_documentacion_de_excel()
-    print(f"📋 DOCUMENTACION leída del Excel: {tipo_doc}")
+def llenar_items_facturacion():
 
-    MAPA_IMAGENES = {
-        "OTH VISITA TECNICA":         IMAGEN_VISITA_TECNICA,
-        "OTH INSTALACION DE SERVICIO": IMAGEN_OTH_INSTALACION,
-        "OTH ACOMETIDA":              IMAGEN_OTH_ACOMETIDA,
-        "OTH DISEÑO UM":              IMAGEN_OTH_DISEÑO_UM,
-    }
+    # --- FECHA COMPROMISO ---
+    try:
+        loc = pyautogui.locateOnScreen(IMAGEN_FECHA_COMPROMISO, confidence=CONFIDENCE)
+    except Exception:
+        loc = None
 
-    # ---- CASO OTP ----
-    if tipo_doc == "OTP":
-        print("🔀 Tipo OTP → flujo especial sin TAREAS")
-
-        pyautogui.press("enter")
-        pausa(2)
-        pyautogui.press("enter")
-
-        try:
-            loc_editar = pyautogui.locateOnScreen(IMAGEN_EDITAR_INCIDENTE, confidence=CONFIDENCE)
-        except Exception:
-            loc_editar = None
-
-        if not loc_editar:
-            print("⚠ No se encontró editar_incidente.png")
-            return False
-
-        pyautogui.click(loc_editar)
-        pausa(1)
-        pyautogui.press("enter")
-
-        texto_um = obtener_documentacion_um_de_excel()
-        if not pegar_texto_anotaciones_um(texto_um, loc_editar):
-            return False
-
-        try:
-            loc_guardar_otp = pyautogui.locateOnScreen(IMAGEN_GUARDAR_OTP, confidence=CONFIDENCE)
-        except Exception:
-            loc_guardar_otp = None
-
-        if not loc_guardar_otp:
-            print("⚠ No se encontró guardar_otp.png")
-            return False
-
-        pyautogui.click(loc_guardar_otp)
-        pausa(2)
-
-        try:
-            loc_cierre = pyautogui.locateOnScreen(IMAGEN_CIERRE, confidence=CONFIDENCE)
-        except Exception:
-            loc_cierre = None
-
-        if loc_cierre:
-            pyautogui.click(loc_cierre)
-            pausa(2)
-        else:
-            print("⚠ No se encontró cierre.png")
-
-        return True
-
-    # ---- CASOS OTH ----
-    imagen_oth = MAPA_IMAGENES.get(tipo_doc)
-    if not imagen_oth:
-        print(f"⚠ Tipo desconocido: {tipo_doc}")
+    if not loc:
+        print("⚠ No se encontró FECHA_compromiso.png")
         return False
 
-    try:
-        location_tareas = pyautogui.locateOnScreen(IMAGEN_TAREAS, confidence=CONFIDENCE)
-    except Exception:
-        location_tareas = None
+    x, y = pyautogui.center(loc)
+    pyautogui.click(x + 450, y)
+    pausa(0.2)
+    pyautogui.press("esc")
+    pausa(0.2)
 
-    if not location_tareas:
+    pyautogui.press("tab");  pausa(0.2)
+    pyautogui.press("down"); pausa(0.2)
+    pyautogui.press("down"); pausa(0.2)
+    pyautogui.write("inteegra"); pausa(0.2)
+
+    pyautogui.press("tab"); pausa(0.2)
+    pyautogui.write("NO")
+
+    pyautogui.press("tab"); pausa(0.2)
+    pyautogui.press("down"); pausa(0.2)
+    pyautogui.press("down"); pausa(0.2)
+    pyautogui.write("config"); pausa(0.2)
+
+    pyautogui.press("tab"); pausa(0.2)
+
+
+    pyautogui.scroll(-30); pausa(0.2)
+
+    print("✅ FECHA_COMPROMISO navegada (ESC)")
+
+    # --- OT_TIPO ---
+    ot_tipo = obtener_dato_de_columna("OT_TIPO")
+    print(f"📋 OT_TIPO: {ot_tipo}")
+
+    if ot_tipo and "CORTA" in ot_tipo.upper():
+        pausa(1)
+        for _ in range(12):
+            pyautogui.press("down"); pausa(0.1)
+
+        pyautogui.press("tab"); pausa(0.2)
+        pyautogui.write("30"); pausa(0.2)
+        pyautogui.press("tab"); pausa(0.2)
+        pyautogui.write("30"); pausa(0.2)
+
+    else:
+        pausa(1)
+        for _ in range(13):
+            pyautogui.press("down"); pausa(0.1)
+            
+        pyautogui.press("tab"); pausa(0.2)
+        pyautogui.write("60"); pausa(0.2)
+        pyautogui.press("tab"); pausa(0.2)
+        pyautogui.write("60"); pausa(0.2)
+
+    pyautogui.press("tab"); pausa(0.2)
+    pyautogui.write("NO"); pausa(0.2)
+
+    # 21 tabs → SI
+    for _ in range(21):
+        pyautogui.press("tab"); pausa(0.1)
+    pyautogui.write("SI"); pausa(0.2)
+
+    # 28 tabs → SI
+    for _ in range(28):
+        pyautogui.press("tab"); pausa(0.1)
+    pyautogui.write("SI"); pausa(0.2)
+
+    # 1 tab → 1
+    pyautogui.press("tab"); pausa(0.2)
+    pyautogui.write("1"); pausa(0.2)
+
+    print("✅ Items de facturación completados")
+    return True
+
+# ==========================================
+# FLUJO CONFIGURACION
+# ==========================================
+def procesar_configuracion():
+    doc_config = obtener_dato_de_columna("DOCUMENTACION")
+    print(f"📋 DOC_CONFIG: {doc_config[:50] if doc_config else 'vacío'}...")
+
+    # 1. Buscar y click en tareas.png
+    try:
+        loc_tareas = pyautogui.locateOnScreen(IMAGEN_TAREAS, confidence=CONFIDENCE)
+    except Exception:
+        loc_tareas = None
+
+    if not loc_tareas:
         print("⚠ No se detectó tareas.png")
         return False
 
-    pyautogui.click(location_tareas)
+    pyautogui.click(loc_tareas)
     pausa(1)
     pyautogui.press("enter")
     pausa(1)
     pyautogui.move(0, 30)
     pausa(1)
 
-    pyautogui.scroll(-20)
-    pausa(2)
+    # 2. Buscar primero, scrollear solo si no encuentra (3 scrolls de -5, 3 intentos por scroll)
+    loc_config = None
+    for scroll_num in range(3):
+        for intento in range(3):
+            try:
+                loc_config = pyautogui.locateOnScreen(IMAGEN_CONFIGURACION, confidence=CONFIDENCE)
+            except Exception:
+                loc_config = None
 
-    loc_oth = None
-    for _ in range(3):
-        try:
-            loc_oth = pyautogui.locateOnScreen(imagen_oth, confidence=CONFIDENCE)
-        except Exception:
-            loc_oth = None
+            if loc_config:
+                print("✅ Encontrado configuracion.png")
+                break
 
-        if loc_oth:
-            print(f"✅ Encontrado {tipo_doc}")
+            print(f"🔍 No se encontró configuracion.png (scroll {scroll_num + 1}/3, intento {intento + 1}/3), esperando...")
+            pausa(2)
+
+        if loc_config:
             break
 
-        print(f"🔍 No se encontró {tipo_doc}, haciendo scroll y reintentando...")
-        pyautogui.scroll(-10)
+        print("🔍 Haciendo scroll y reintentando...")
+        pyautogui.scroll(-5)
         pausa(3)
 
-    if not loc_oth:
-        print(f"⚠ No se encontró imagen OTH tras scrolls: {imagen_oth}")
+    if not loc_config:
+        print("⚠ No se encontró configuracion.png tras scrolls")
         return False
 
-    pyautogui.scroll(-3)
+    # 3. Doble click directo con loc_config ya encontrado
+    pyautogui.click(loc_config)
+    pyautogui.click(loc_config) 
     pausa(3)
 
+    # 4. Maximizar
+    pyautogui.hotkey("win", "up")
+    pausa(2)
+
+    # Buscar editar_tarea.png
     try:
-        loc_oth = pyautogui.locateOnScreen(imagen_oth, confidence=CONFIDENCE)
+        loc_editar = pyautogui.locateOnScreen(IMAGEN_EDITAR_TAREA, confidence=CONFIDENCE)
     except Exception:
-        loc_oth = None
+        loc_editar = None
 
-    if not loc_oth:
-        print(f"⚠ No se encontró imagen OTH tras segundo scroll: {imagen_oth}")
+    if not loc_editar:
+        print("⚠ No se encontró editar_tarea.png")
         return False
 
-    if not abrir_item_y_preparar_um(loc_oth):
+    pyautogui.click(loc_editar)
+    pausa(1)
+    pyautogui.press("enter")
+    pausa(1)
+
+    # 5. Pegar documentación en anotaciones (ANTES de facturación)
+    if not pegar_texto_en_anotaciones(doc_config, loc_config):
         return False
 
-    texto_um = obtener_documentacion_um_de_excel()
-    if not pegar_texto_anotaciones_um(texto_um, loc_oth):
-        return False
-
-    if not guardar_crm():
+    # 6. Items de facturación (fechas con ESC + navegación)
+    if not llenar_items_facturacion():
         return False
 
     return True
 
 # ==========================================
-# FLUJO PRINCIPAL UM (hasta ok3)
+# FLUJO PRINCIPAL
 # ==========================================
 def ejecutar_flujo(necesita_login):
     global flujo_en_ejecucion, last_activity_time
@@ -787,15 +646,15 @@ def ejecutar_flujo(necesita_login):
         flujo_en_ejecucion = True
 
     traer_crm_al_frente()
-    print("⚡ Ejecutando flujo UM...")
+    print("⚡ Ejecutando flujo CONFIGURACION...")
     pausa(2)
 
     if necesita_login:
-        user = os.environ.get("CRM_USER", "46381573").strip()
-        pwd  = os.environ.get("CRM_PASS",  "*Dairy136*").strip()
+        user = os.environ.get("CRM_USER", "46243463").strip()
+        pwd  = os.environ.get("CRM_PASS",  "AlaiaS02.*").strip()
 
         if not user or not pwd:
-            print("❌ Faltan credenciales. Configura CRM_USER y CRM_PASS en variables de entorno.")
+            print("❌ Faltan credenciales.")
             with lock:
                 flujo_en_ejecucion = False
             return
@@ -817,9 +676,46 @@ def ejecutar_flujo(necesita_login):
     ok1 = esperar_imagen_con_f2()
     ok2 = copiar_pegar_otp()
     ok3 = detectar_flujo_y_maximizar()
-    ok4 = procesar_tareas_um()
+    ok4 = procesar_configuracion()
+    ok5 = guardar_crm()
 
-    if ok1 and ok2 and ok3 and ok4:
+    # Verificar OTP ocupada tras guardar
+    try:
+        loc_ocupada = pyautogui.locateOnScreen(IMAGEN_OTP_OCUPADA, confidence=CONFIDENCE)
+    except Exception:
+        loc_ocupada = None
+
+    if loc_ocupada:
+        print("⚠ OTP ocupada detectada después de guardar → presionando Enter")
+        pyautogui.press("enter")
+        pausa(1)
+    else:
+        print("✅ OTP libre luego de guardar")
+
+    # Primer cierre
+    try:
+        loc_cierre = pyautogui.locateOnScreen(IMAGEN_CIERRE, confidence=CONFIDENCE)
+        if loc_cierre:
+            pyautogui.click(loc_cierre)
+            pausa(1)
+            print("✅ cierre.png clickeado")
+    except Exception:
+        print("⚠ No se encontró cierre.png")
+
+    pyautogui.moveTo(1021, 517)
+    pausa(0.5)
+
+    # Segundo cierre
+    try:
+        loc_cierre = pyautogui.locateOnScreen(IMAGEN_CIERRE, confidence=CONFIDENCE)
+        if loc_cierre:
+            pyautogui.click(loc_cierre)
+            pausa(1)
+            print("✅ segundo cierre.png clickeado")
+    except Exception:
+        print("⚠ No se encontró segundo cierre.png")
+
+    if ok1 and ok2 and ok3 and ok4 and ok5:
         marcar_fila_estado(fila_actual_excel, "COMPLETADO")
     else:
         marcar_fila_estado(fila_actual_excel, "ERROR")
@@ -828,14 +724,14 @@ def ejecutar_flujo(necesita_login):
     with lock:
         flujo_en_ejecucion = False
 
-    print("🏁 Flujo UM terminado")
+    print("🏁 Flujo CONFIGURACION terminado")
 
 # ==========================================
-# INICIO (COLA POR EXCEL - solo filas UM)
+# INICIO
 # ==========================================
 if __name__ == "__main__":
     if not adquirir_lock():
-        print("🟡 Ya hay un bot UM corriendo. Este se cierra para respetar la cola por Excel.")
+        print("🟡 Ya hay un bot CONFIGURACION corriendo. Cerrando.")
     else:
         try:
             necesita_login_global = abrir_crm_si_no_existe()
@@ -863,7 +759,7 @@ if __name__ == "__main__":
 
                 if inicio_espera_sin_pendientes is None:
                     inicio_espera_sin_pendientes = time.time()
-                    print("⏳ Sin pendientes UM. Iniciando espera de 8 minutos...")
+                    print("⏳ Sin pendientes CONFIGURACION. Esperando 8 minutos...")
 
                 if time.time() - inicio_espera_sin_pendientes >= INACTIVITY_LIMIT:
                     print("🔴 8 minutos sin actividad. Cerrando CRM...")
@@ -874,7 +770,7 @@ if __name__ == "__main__":
                             proc = buscar_crm()
                             if proc:
                                 proc.terminate()
-                        print("✅ CRM cerrado por inactividad")
+                        print("✅ CRM cerrado")
                     except Exception as e:
                         print(f"⚠ Error cerrando CRM: {e}")
                     break
