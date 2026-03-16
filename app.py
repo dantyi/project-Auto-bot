@@ -1,5 +1,8 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> parent of e7a7d6a (config)
 from flask import Flask, render_template, request, jsonify
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Alignment
@@ -20,6 +23,7 @@ app = Flask(__name__, static_folder=None)
 =======
 app = Flask(__name__)
 EXCEL_FILE = "datos.xlsx"
+<<<<<<< HEAD
 >>>>>>> parent of e7a7d6a (config)
 
 # ── CORS ──────────────────────────────────────────────────────────────────────
@@ -28,6 +32,17 @@ CORS(
     resources={r"/api/*": {"origins": ["http://localhost:5173", "http://localhost:5000"]}},
     supports_credentials=True,
 )
+=======
+
+# ==========================
+# CREAR EXCEL SI NO EXISTE
+# ==========================
+def crear_excel():
+    if not os.path.exists(EXCEL_FILE):
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Registros"
+>>>>>>> parent of e7a7d6a (config)
 
 <<<<<<< HEAD
 # ── SocketIO ──────────────────────────────────────────────────────────────────
@@ -99,6 +114,7 @@ def serve_react(path):
         return jsonify({"error": "Not found"}), 404
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     if os.path.isdir(FRONTEND_DIST):
         # Serve static assets (JS, CSS, images, etc.) from the dist folder
         asset_path = os.path.join(FRONTEND_DIST, path)
@@ -112,6 +128,8 @@ def serve_react(path):
     # Frontend not built yet – return a simple status message
     return jsonify({"message": "Backend running. Frontend not built yet."}), 200
 =======
+=======
+>>>>>>> parent of e7a7d6a (config)
 # ==========================
 # GUARDAR REGISTRO + ACTIVAR BOT
 # ==========================
