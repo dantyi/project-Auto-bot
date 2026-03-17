@@ -244,13 +244,45 @@
             <label for="doc_config">DOCUMENTACIÓN CONFIGURACIÓN</label>
             <textarea id="doc_config" placeholder="Ingrese la documentación de configuración..." required></textarea>
 
-            <label>CARGAR ARCHIVOS</label>
-            <div class="file-area" id="fileArea">
-                <input type="file" id="archivos" multiple>
+            <label>PRUEBAS PREVIAS</label>
+            <div class="file-area" id="fileArea-pruebas">
+                <input type="file" id="archivos-pruebas" multiple>
                 <div class="file-icon">📁</div>
                 <div class="file-text">Arrastra archivos aquí o <span>haz click para seleccionar</span></div>
             </div>
-            <div class="file-list" id="fileList"></div>
+            <div class="file-list" id="fileList-pruebas"></div>
+
+            <label>MINUTOGRAMA</label>
+            <div class="file-area" id="fileArea-minutograma">
+                <input type="file" id="archivos-minutograma" multiple>
+                <div class="file-icon">📁</div>
+                <div class="file-text">Arrastra archivos aquí o <span>haz click para seleccionar</span></div>
+            </div>
+            <div class="file-list" id="fileList-minutograma"></div>
+
+            <label>VALIDACIÓN WAN-LAN</label>
+            <div class="file-area" id="fileArea-wanlan">
+                <input type="file" id="archivos-wanlan" multiple>
+                <div class="file-icon">📁</div>
+                <div class="file-text">Arrastra archivos aquí o <span>haz click para seleccionar</span></div>
+            </div>
+            <div class="file-list" id="fileList-wanlan"></div>
+
+            <label>SCRIPT</label>
+            <div class="file-area" id="fileArea-script">
+                <input type="file" id="archivos-script" multiple>
+                <div class="file-icon">📁</div>
+                <div class="file-text">Arrastra archivos aquí o <span>haz click para seleccionar</span></div>
+            </div>
+            <div class="file-list" id="fileList-script"></div>
+
+            <label>SATURACIÓN</label>
+            <div class="file-area" id="fileArea-saturacion">
+                <input type="file" id="archivos-saturacion" multiple>
+                <div class="file-icon">📁</div>
+                <div class="file-text">Arrastra archivos aquí o <span>haz click para seleccionar</span></div>
+            </div>
+            <div class="file-list" id="fileList-saturacion"></div>
 
             <button type="submit">Guardar Registro</button>
             <div id="mensaje"></div>
@@ -259,72 +291,80 @@
 </div>
 
 <script>
-    const inputArchivos = document.getElementById("archivos");
-    const fileList     = document.getElementById("fileList");
-    const fileArea     = document.getElementById("fileArea");
-    let archivosSeleccionados = [];
+    const secciones = [
+        { id: "pruebas",    campo: "archivos_pruebas_previas" },
+        { id: "minutograma", campo: "archivos_minutograma" },
+        { id: "wanlan",     campo: "archivos_wanlan" },
+        { id: "script",     campo: "archivos_script" },
+        { id: "saturacion", campo: "archivos_saturacion" }
+    ];
 
-    inputArchivos.addEventListener("change", () => {
-        Array.from(inputArchivos.files).forEach(f => agregarArchivo(f));
-        inputArchivos.value = "";
+    const archivos = {};
+    secciones.forEach(s => { archivos[s.id] = []; });
+
+    secciones.forEach(({ id }) => {
+        const input   = document.getElementById(`archivos-${id}`);
+        const area    = document.getElementById(`fileArea-${id}`);
+        const lista   = document.getElementById(`fileList-${id}`);
+
+        input.addEventListener("change", () => {
+            Array.from(input.files).forEach(f => agregar(id, f));
+            input.value = "";
+        });
+
+        area.addEventListener("dragover", e => { e.preventDefault(); area.classList.add("drag-over"); });
+        area.addEventListener("dragleave", () => area.classList.remove("drag-over"));
+        area.addEventListener("drop", e => {
+            e.preventDefault();
+            area.classList.remove("drag-over");
+            Array.from(e.dataTransfer.files).forEach(f => agregar(id, f));
+        });
     });
 
-    fileArea.addEventListener("dragover", e => { e.preventDefault(); fileArea.classList.add("drag-over"); });
-    fileArea.addEventListener("dragleave", () => fileArea.classList.remove("drag-over"));
-    fileArea.addEventListener("drop", e => {
-        e.preventDefault();
-        fileArea.classList.remove("drag-over");
-        Array.from(e.dataTransfer.files).forEach(f => agregarArchivo(f));
-    });
-
-    function agregarArchivo(file) {
-        if (archivosSeleccionados.find(f => f.name === file.name)) return;
-        archivosSeleccionados.push(file);
-        renderFileList();
+    function agregar(id, file) {
+        if (archivos[id].find(f => f.name === file.name)) return;
+        archivos[id].push(file);
+        renderLista(id);
     }
 
-    function renderFileList() {
-        fileList.innerHTML = "";
-        archivosSeleccionados.forEach((f, i) => {
+    function eliminar(id, i) {
+        archivos[id].splice(i, 1);
+        renderLista(id);
+    }
+
+    function renderLista(id) {
+        const lista = document.getElementById(`fileList-${id}`);
+        lista.innerHTML = "";
+        archivos[id].forEach((f, i) => {
             const div = document.createElement("div");
             div.className = "file-item";
-            div.innerHTML = `<span>📄 ${f.name}</span><button type="button" onclick="eliminarArchivo(${i})">✕</button>`;
-            fileList.appendChild(div);
+            div.innerHTML = `<span>📄 ${f.name}</span><button type="button" onclick="eliminar('${id}', ${i})">✕</button>`;
+            lista.appendChild(div);
         });
-    }
-
-    function eliminarArchivo(i) {
-        archivosSeleccionados.splice(i, 1);
-        renderFileList();
     }
 
     document.getElementById("formulario-config").addEventListener("submit", function(e) {
         e.preventDefault();
 
-        const otp      = document.getElementById("otp").value.trim();
-        const ot_tipo  = document.getElementById("ot_tipo").value;
-        const doc      = document.getElementById("doc_config").value;
-
         const formData = new FormData();
-        formData.append("otp",       otp);
-        formData.append("ot_tipo",   ot_tipo);
-        formData.append("doc_config", doc);
-        archivosSeleccionados.forEach(f => formData.append("archivos", f));
+        formData.append("otp",       document.getElementById("otp").value.trim());
+        formData.append("ot_tipo",   document.getElementById("ot_tipo").value);
+        formData.append("doc_config", document.getElementById("doc_config").value);
+
+        secciones.forEach(({ id, campo }) => {
+            archivos[id].forEach(f => formData.append(campo, f));
+        });
 
         const btn = e.target.querySelector("button[type='submit']");
         btn.innerText = "Enviando...";
         btn.disabled  = true;
 
-        fetch("/guardar_config", {
-            method: "POST",
-            body: formData
-        })
+        fetch("/guardar_config", { method: "POST", body: formData })
         .then(res => res.json())
         .then(data => {
             document.getElementById("mensaje").innerText = data.mensaje || "¡Guardado!";
             e.target.reset();
-            archivosSeleccionados = [];
-            fileList.innerHTML = "";
+            secciones.forEach(({ id }) => { archivos[id] = []; renderLista(id); });
         })
         .catch(() => {
             document.getElementById("mensaje").innerText = "Error al enviar.";

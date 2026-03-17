@@ -1,0 +1,54 @@
+**********************************************************************************************
+********************************     COMENTARIOS     *****************************************
+**********************************************************************************************
+
+OBJETIVO: SOBRE LA OTP 22661482 - SE REQUIERE REALIZAR SATURACION DE 2G CANAL INTERNET DEDICADO CON ANALIZADOR DJQ0000215
+
+NOTA:
+
+- EL SERVICIO YA TIENE CONFIGURADAS LAS 2G
+      
+1. VALIDAR PREVIAS Y CONECTIVIDAD
+2. REALIZAR SATURACION A 2G
+3. GENERAR GRAFICA DE SATURACION
+4. REALIZAR PRUEBAS CON CLIENTE
+5. ENTREGA 
+ 
+===============================================================================================
+=================================	IMPLEMENTACION        =====================================
+===============================================================================================
+===============================================================================================
+
+NOTA:
+
+- EL SERVICIO YA TIENE CONFIGURADAS LAS 2G
+      
+1. VALIDAR PREVIAS Y CONECTIVIDAD
+
+<THBHPLAZACLARO>dis cur int Eth-Trunk1000.2435 
+#
+interface Eth-Trunk1000.2435
+ vlan-type dot1q 2435
+ description IPDP COLMEDICA MEDICINA PREPAGADA SA - DJQ0000215
+ ip binding vpn-instance internet
+ ip address 10.162.89.137 255.255.255.252
+ statistic enable
+ traffic-policy CAR-2G inbound
+ traffic-policy CAR-2G outbound
+ trust upstream default
+ qos phb disable
+#
+return
+<THBHPLAZACLARO>
+
+2. REALIZAR SATURACION A 2G
+3. GENERAR GRAFICA DE SATURACION
+4. REALIZAR PRUEBAS CON CLIENTE
+5. ENTREGA 
+
+===============================================================================================
+================================= LIBERAR RECURSOS         ====================================
+===============================================================================================
+===============================================================================================
+
+N/A

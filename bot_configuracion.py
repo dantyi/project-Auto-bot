@@ -20,11 +20,17 @@ IMAGEN_ANOTACIONES     = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\strati
 IMAGEN_GUARDAR         = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\guardar.png"
 IMAGEN_CIERRE          = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\cierre.png"
 IMAGEN_TAREAS              = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\tareas.png"
+IMAGEN_TAREAS_1            = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\tareas_1.png"
 IMAGEN_CONFIGURACION       = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\configuracion.png"
 IMAGEN_EDITAR_TAREA        = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\editar_tarea.png"
 IMAGEN_FECHA_COMPROMISO    = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\FECHA_compromiso.png"
 IMAGEN_FECHA_PROGRAMACION  = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\fecha_programacion1.png"
 IMAGEN_TIPO_SERVICIO       = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\tipo_de_servicio.png"
+IMAGEN_OLE               = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\OLE.png"
+IMAGEN_EDITAR_INCIDENTE  = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\editar_incidente.png"
+IMAGEN_ASIGNAR_INCIDENTE = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\asignar_incidente.png"
+IMAGEN_AGREGAR           = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\agregar.png"
+IMAGEN_ACEPTAR           = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\aceptar.png"
 
 EXCEL_PATH     = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\datos.xlsx"
 ESTADO_COLUMNA = "COMPLETADO"
@@ -550,20 +556,154 @@ def llenar_items_facturacion():
     return True
 
 # ==========================================
+# OBTENER PATHS DEL EXCEL (solo los que no son "NO")
+# ==========================================
+def obtener_paths_de_excel():
+    COLUMNAS = [
+        ("PATH_PRUEBAS_PREVIAS",    "PRUEBAS PREVIAS"),
+        ("PATH_MINUTOGRAMA",        "MINUTOGRAMA"),
+        ("PATH_VALIDACION_WAN_LAN", "VALIDACION WAN LAN"),
+        ("PATH_SCRIPT",             "SCRIPT"),
+        ("PATH_SATURACION",         "SATURACION"),
+    ]
+    resultado = []
+    for col, etiqueta in COLUMNAS:
+        val = obtener_dato_de_columna(col)
+        if val and val.upper() != "NO":
+            for ruta in val.split(";"):
+                ruta = ruta.strip()
+                if ruta:
+                    resultado.append((ruta, etiqueta))
+    return resultado
+
+# ==========================================
+# PROCESAR ADJUNTOS OLE (antes de TAREAS)
+# ==========================================
+def procesar_adjuntos_ole(paths):
+    # 1. Buscar OLE.png (90%) → Enter
+    try:
+        loc_ole = pyautogui.locateOnScreen(IMAGEN_OLE, confidence=0.90)
+    except Exception:
+        loc_ole = None
+    if not loc_ole:
+        print("⚠ No se encontró OLE.png → saltando adjuntos")
+        return False
+    pyautogui.click(loc_ole)
+    pausa(1)
+    pyautogui.press("enter")
+    pausa(2)
+
+    # 2. Buscar editar_incidente.png → click
+    try:
+        loc_editar = pyautogui.locateOnScreen(IMAGEN_EDITAR_INCIDENTE, confidence=CONFIDENCE)
+    except Exception:
+        loc_editar = None
+    if not loc_editar:
+        print("⚠ No se encontró editar_incidente.png → saltando adjuntos")
+        return False
+    pyautogui.click(loc_editar)
+    pausa(1)
+
+    # 4. Buscar asignar_incidente.png → click
+    try:
+        loc_asig = pyautogui.locateOnScreen(IMAGEN_ASIGNAR_INCIDENTE, confidence=CONFIDENCE)
+    except Exception:
+        loc_asig = None
+    if not loc_asig:
+        print("⚠ No se encontró asignar_incidente.png → saltando adjuntos")
+        return False
+    pyautogui.click(loc_asig)
+    pausa(1)
+
+    # 5. Buscar asignar_incidente.png de nuevo → si no aparece sigue flujo normal
+    try:
+        loc_asig2 = pyautogui.locateOnScreen(IMAGEN_ASIGNAR_INCIDENTE, confidence=CONFIDENCE)
+    except Exception:
+        loc_asig2 = None
+    if not loc_asig2:
+        print("⚠ asignar_incidente.png no reaparece → continuando con flujo TAREAS")
+        return False
+    pyautogui.press("enter")
+    pausa(2)
+
+    # 6. Buscar agregar.png → Enter
+    try:
+        loc_agregar = pyautogui.locateOnScreen(IMAGEN_AGREGAR, confidence=CONFIDENCE)
+    except Exception:
+        loc_agregar = None
+    if not loc_agregar:
+        print("⚠ No se encontró agregar.png")
+        return False
+    pyautogui.click(loc_agregar)
+    pausa(3)
+    pyautogui.press("enter")
+    pausa(5)
+
+    # 7. Por cada archivo: (2do+ → Enter abre diálogo) → pega ruta → Enter → escribe etiqueta → aceptar → Enter
+    for i, (ruta, etiqueta) in enumerate(paths):
+        print(f"📎 Adjuntando: {etiqueta} → {ruta}")
+
+        # Del 2do archivo en adelante: Enter abre el nuevo diálogo
+        if i > 0:
+            pyautogui.press("enter")
+            pausa(2)
+
+        win32clipboard.OpenClipboard()
+        win32clipboard.EmptyClipboard()
+        win32clipboard.SetClipboardText(ruta, win32clipboard.CF_UNICODETEXT)
+        win32clipboard.CloseClipboard()
+        pausa(1)
+        pyautogui.hotkey("ctrl", "v")
+        pausa(1)
+        pyautogui.press("enter")
+        pausa(1)
+
+        pyautogui.write(etiqueta, interval=0.05)
+        pausa(1)
+
+        try:
+            loc_aceptar = pyautogui.locateOnScreen(IMAGEN_ACEPTAR, confidence=CONFIDENCE)
+        except Exception:
+            loc_aceptar = None
+        if not loc_aceptar:
+            print(f"⚠ No se encontró aceptar.png para {etiqueta}")
+        else:
+            pyautogui.click(loc_aceptar)
+            pausa(1)
+            pyautogui.press("enter")
+            pausa(1)
+
+    print("✅ Adjuntos OLE procesados")
+    return True
+
+# ==========================================
 # FLUJO CONFIGURACION
 # ==========================================
 def procesar_configuracion():
     doc_config = obtener_dato_de_columna("DOCUMENTACION")
     print(f"📋 DOC_CONFIG: {doc_config[:50] if doc_config else 'vacío'}...")
 
-    # 1. Buscar y click en tareas.png
-    try:
-        loc_tareas = pyautogui.locateOnScreen(IMAGEN_TAREAS, confidence=CONFIDENCE)
-    except Exception:
-        loc_tareas = None
+    # 0. Verificar paths y procesar adjuntos OLE si los hay
+    paths = obtener_paths_de_excel()
+    if paths:
+        print(f"📂 Se encontraron {len(paths)} archivo(s) para adjuntar en OLE")
+        procesar_adjuntos_ole(paths)
+    else:
+        print("📂 Todas las columnas PATH están en NO → saltando OLE")
+
+    # 1. Buscar y click en tareas.png o tareas_1.png
+    loc_tareas = None
+    for img_tareas in [IMAGEN_TAREAS, IMAGEN_TAREAS_1]:
+        try:
+            loc_tareas = pyautogui.locateOnScreen(img_tareas, confidence=CONFIDENCE)
+        except Exception:
+            loc_tareas = None
+        if loc_tareas:
+            print(f"✅ Detectado: {img_tareas}")
+            break
 
     if not loc_tareas:
-        print("⚠ No se detectó tareas.png")
+        print("⚠ No se detectó tareas.png ni tareas_1.png")
         return False
 
     pyautogui.click(loc_tareas)

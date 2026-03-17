@@ -1,0 +1,121 @@
+*********************************
+      SDWAN REMARCACION 
+
+22688898 - INVERSIONES INT. COLOMBIA SAS - IJN0001239
+
+©  VALIDACION TIPO DE SERVICIO  (SI APLICA)
+
+ES ÚLTIMA MILLA DE BACKUP ? :   NO
+ID SERVICIO PPAL: IJN0001239
+SDS ACCESO DEL SERVICIO PPAL: ITX MEDIACOMMERCE
+NOMBRE EQUIPO CAPA 3 ó PE : A9KDOSQUEBRADAS
+  
+©  DISPONIBILIDAD L2 (SI APLICA)
+
+N/A
+
+©  DISPONIBILIDAD VLAN
+
+NO APLICA
+
+©  CONFIGURACIÓN PUERTO ACCESO (L2)(ACTUAL)
+
+
+N/A ITX MEDIA COMMERCE
+
+©  CONFIGURACION SUB-INTERFAZ/ENRUTAMIENTO PE (L3)(ACTUAL)
+
+
+RP/0/RSP0/CPU0:A9KDOSQUEBRADAS#show run int GigabitEthernet0/0/1/1.167                            
+Fri Feb  6 16:04:36.139 COLOMBIA
+interface GigabitEthernet0/0/1/1.167
+ description IPDP INVERSIONES INT COLOMBIA SAS GESTION_PROACTIVA PPAL - IJN0000844,5,8(IJN0000849),+TSO3050
+ service-policy input CAR-100M
+ service-policy output CAR-100M
+ vrf internet-vip
+ ipv4 address 186.144.42.177/30
+ encapsulation dot1q 167
+!
+
+RP/0/RSP0/CPU0:A9KDOSQUEBRADAS#
+
+
+©  CONFIGURACION SUB-INTERFAZ (L2)(NUEVO)
+
+N/A ITX MEDIA COMMERCE
+
+©  CONFIGURACION SUB-INTERFAZ/ENRUTAMIENTO PE (L3)(NUEVA)
+
+RP/0/RSP0/CPU0:A9KDOSQUEBRADAS#show run int GigabitEthernet0/0/1/1.167
+Fri Feb  6 16:32:01.658 COLOMBIA
+interface GigabitEthernet0/0/1/1.167
+ description IPDP INVERSIONES INT COLOMBIA SAS GESTION_PROACTIVA PPAL - IJN0000844,5,8,1239(IJN0000849),+TSO3050
+ service-policy input CAR-100M
+ service-policy output CAR-100M
+ vrf internet-vip
+ ipv4 address 186.144.42.177/30
+ encapsulation dot1q 167
+!
+
+RP/0/RSP0/CPU0:A9KDOSQUEBRADAS#
+
+©  CONFIGURACIONES ADICONALES (SI APLICA)
+
+N/A
+
+
+©  PENDIENTES DE LA CONFIGURACION
+
+N/A
+
+©  PDSR/PSR
+
+SECUENCIA 1: MPLS-TRASLADOSECUENCIA
+ANCHO DE BANDA (TRASLADO)	10M
+CIUDAD (TRASLADO)	MONTERIA
+NODO (TRASLADO)	A9KDOSQUEBRADAS
+PUERTO LOGICO (TRASLADO)	GigabitEthernet0/0/1/1.167
+IP WAN (TRASLADO)	186.144.42.177/30
+VRF (TRASLADO)	internet-vip
+SWITCH (TRASLADO)	TERCEROS
+©  BITACORA AVAL
+
+N/A
+
+----------------------------------  
+© CHEK LIST CONFIGURACION 
+----------------------------------  
+      
+Adjuntar en OTP soportes requeridos para entrega:
+      
+Minutograma ejecutado                     NO
+SCRIPT ejecutado                          NO
+RFC  ejecutado                            NO
+Pruebas de /los servicio(s) actual(es)    NO
+Configuración actual del  CPE (sh run)    NO
+Hay afectacion del servicio               NO    
+Se configura por activador                NO  
+
+
+----------------------------------------- 
+© CHEK LIST CANALES BACKUP O REDUNDANCIA 
+-----------------------------------------
+
+INFORMACION ÚLTIMA MILLA CANAL DE PPAL:  
+SDS ACCESO DEL SERVICIO PPAL: ITX MEDIACOMMERCE
+NOMBRE EQUIPO CAPA 3 ó PE : ITX MEDIACOMMERCE
+ID SERVICIO PRINCIPAL: IJN0001239
+INTERFACE CAPA 3 ó PE PRINCIPAL:   GigabitEthernet0/0/1/1.167 
+OBSERVACIONES: N/A          
+
+----------------------------------------------------------
+© Descripción de requerimientos para entrega del servicio (A nivel técnico):
+----------------------------------------------------------
+      
+1. : Pruebas previas
+2. : habilitar servicio 
+3. : Prueba UM y conectividad
+4. : Entrega de servicio y firma de actas.
+
+
+DANISH SHAROK ALAM ROJAS

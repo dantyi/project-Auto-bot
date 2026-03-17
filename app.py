@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for
+from flask import Flask, render_template, request, jsonify
 from werkzeug.utils import secure_filename
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Alignment
@@ -6,46 +6,8 @@ import os
 import subprocess
 
 app = Flask(__name__)
-app.secret_key = "inteegra_secret_2024"
 EXCEL_FILE = "datos.xlsx"
 OLE_FOLDER = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\OLE"
-
-# ==========================
-# CREDENCIALES
-# ==========================
-USUARIOS = {
-    "46380781": "Milo*25/7a",
-    "46336400": "RafaM183*",
-    "46338572": "Mogoli09*/",
-    "46336631": "ROdri27.**",
-    "46298262": "Color429*-",
-    "46379992": "Ariran.15*",
-    "46381073": "Negro025+*",
-    "45119169": "Tesor00/*",
-    "46174524": "Italia/06*",
-    "46136336": "GocaN=117.",
-    "46270148": "Cahebb44*/",
-    "46299276": "ADiFBb34++",
-    "46336483": "178-*Isabe",
-    "46336620": "Reiden98**",
-    "46380003": "226*Bogot+",
-    "46248650": "Lid3r.o25-",
-    "46299283": "HombeT/22*",
-    "46336460": "AraNov17.*",
-    "46335830": "Ashvar23-@",
-    "46221613": "Poker2@26*",
-    "46421312": "andrA071/*",
-    "46136353": "aNDR/j17*=",
-    "46335998": "Ros4--OOr",
-    "46336412": "Milos30/*",
-    "46238820": "Colom20y/*",
-    "46270345": "Brasil11y/*",
-    "46381425": "Tesor01/*",
-    "46174440": "Brasil11y/*",
-    "46329538": "Mogoli09*/",
-    "46460710": "Sofma08k.*",
-    "46380810": "Ameri15.*",
-}
 
 # ==========================
 # CREAR EXCEL SI NO EXISTE
@@ -78,7 +40,11 @@ def crear_excel():
             "DOCUMENTACION",
             "DOC_CONFIG",
             "OT_TIPO",
-            "ARCHIVO_PATH"
+            "PATH_PRUEBAS_PREVIAS",
+            "PATH_MINUTOGRAMA",
+            "PATH_VALIDACION_WAN_LAN",
+            "PATH_SCRIPT",
+            "PATH_SATURACION"
         ]
 
         ws.append(encabezados)
@@ -87,7 +53,9 @@ def crear_excel():
 def agregar_columnas_faltantes():
     """Agrega columnas nuevas al Excel si ya existe pero le faltan."""
     nuevas = ["TIPO", "DOCUMENTACION_UM", "CERRAR_OTH", "DOCUMENTACION",
-              "DOC_CONFIG", "OT_TIPO", "ARCHIVO_PATH"]
+              "DOC_CONFIG", "OT_TIPO",
+              "PATH_PRUEBAS_PREVIAS", "PATH_MINUTOGRAMA",
+              "PATH_VALIDACION_WAN_LAN", "PATH_SCRIPT", "PATH_SATURACION"]
     wb = load_workbook(EXCEL_FILE)
     ws = wb.active
     existentes = [cell.value for cell in ws[1]]
@@ -209,46 +177,56 @@ def guardar_um():
 @app.route("/guardar_config", methods=["POST"])
 def guardar_config():
     try:
-        otp       = request.form.get("otp", "").strip()
-        ot_tipo   = request.form.get("ot_tipo", "").strip()
+        otp        = request.form.get("otp", "").strip()
+        ot_tipo    = request.form.get("ot_tipo", "").strip()
         doc_config = request.form.get("doc_config", "").strip()
-        archivos  = request.files.getlist("archivos")
 
-        # Guardar archivos renombrados en OLE
-        rutas_guardadas = []
         os.makedirs(OLE_FOLDER, exist_ok=True)
-        for archivo in archivos:
-            if archivo and archivo.filename:
-                nombre_original = secure_filename(archivo.filename).lower()
-                nombre_nuevo    = f"{otp}_{nombre_original}"
-                ruta_destino    = os.path.join(OLE_FOLDER, nombre_nuevo)
-                archivo.save(ruta_destino)
-                rutas_guardadas.append(ruta_destino)
 
-        archivo_path = "; ".join(rutas_guardadas)
+        def guardar_seccion(campo):
+            archivos = request.files.getlist(campo)
+            rutas = []
+            for archivo in archivos:
+                if archivo and archivo.filename:
+                    nombre = secure_filename(archivo.filename).lower()
+                    nombre_nuevo = f"{otp}_{nombre}"
+                    ruta = os.path.join(OLE_FOLDER, nombre_nuevo)
+                    archivo.save(ruta)
+                    rutas.append(ruta)
+            return "; ".join(rutas) if rutas else "NO"
+
+        path_pruebas   = guardar_seccion("archivos_pruebas_previas")
+        path_minuto    = guardar_seccion("archivos_minutograma")
+        path_wanlan    = guardar_seccion("archivos_wanlan")
+        path_script    = guardar_seccion("archivos_script")
+        path_saturacion = guardar_seccion("archivos_saturacion")
 
         wb = load_workbook(EXCEL_FILE)
         ws = wb.active
 
         fila = [
-            otp,           # OTP
-            "", "", "", "", "",   # cols 2-6
-            "", "", "",          # cols 7-9
-            "",                  # COMPLETADO
-            "", "", "", "",      # cols 11-14
-            "CONFIGURACION",     # TIPO
-            "",                  # DOCUMENTACION_UM
-            "",                  # CERRAR_OTH
-            doc_config,          # DOCUMENTACION  ← col R
-            "",                  # DOC_CONFIG
-            ot_tipo,             # OT_TIPO
-            archivo_path         # ARCHIVO_PATH
+            otp,             # OTP
+            "", "", "", "", "",    # cols 2-6
+            "", "", "",           # cols 7-9
+            "",                   # COMPLETADO
+            "", "", "", "",       # cols 11-14
+            "CONFIGURACION",      # TIPO
+            "",                   # DOCUMENTACION_UM
+            "",                   # CERRAR_OTH
+            doc_config,           # DOCUMENTACION
+            "",                   # DOC_CONFIG
+            ot_tipo,              # OT_TIPO
+            path_pruebas,         # PATH_PRUEBAS_PREVIAS
+            path_minuto,          # PATH_MINUTOGRAMA
+            path_wanlan,          # PATH_VALIDACION_WAN_LAN
+            path_script,          # PATH_SCRIPT
+            path_saturacion       # PATH_SATURACION
         ]
 
         ws.append(fila)
 
         nueva_fila_num = ws.max_row
-        for col in range(1, 22):
+        for col in range(1, 26):
             ws.cell(row=nueva_fila_num, column=col).alignment = Alignment(wrap_text=True)
 
         wb.save(EXCEL_FILE)
