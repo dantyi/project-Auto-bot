@@ -1,0 +1,12 @@
+anthropic
+flask
+flask-cors
+flask-socketio
+PyJWT
+werkzeug
+psycopg[binary]
+python-dotenv
+openpyxl
+pyautogui
+psutil
+pyperclip
