@@ -676,7 +676,7 @@ def click_fecha_compromiso_y_escribir_partes(fecha_compromiso, fecha_programacio
     pyautogui.write(texto_kickoff)
     pausa(0.2)
 
-    pyautogui.scroll(-30)
+    pyautogui.scroll(-3)
     pausa(0.2)
 
     pyautogui.press("tab")
@@ -899,7 +899,7 @@ def buscar_kickoff_novedades(reintentos=5, pausa_entre=1.5):
             print(f"   ↳ GRIS no encontrado")
         except Exception as e:
             print(f"   ↳ Excepción: {e}")
-        pyautogui.scroll(-30)
+        pyautogui.scroll(-5)
         pausa(pausa_entre)
 
     print("❌ No se encontró Kickoffnovedades")
@@ -1099,9 +1099,6 @@ def abrir_item_y_preparar(location_item):
     if not location_item:
         return False
 
-    pyautogui.scroll(-20)
-    pausa(2)
-
     pyautogui.click(location_item)
     pyautogui.click(location_item)
     pausa(3)
@@ -1261,8 +1258,10 @@ def procesar_tareas_kickoff():
         pyautogui.move(0, 30)
         pausa(1)
 
-        # 1) KICKOFF
-        for _ in range(2):
+        # Busca Kickoff, Kickoffnovedades y OTH a la vez en cada intento
+        for intento in range(8):
+            print(f"🔍 Buscando Kickoff / Novedades / Planear con cliente... intento {intento + 1}/8")
+
             try:
                 location_kickoff = pyautogui.locateOnScreen(IMAGEN_KICKOFF, confidence=CONFIDENCE)
             except Exception:
@@ -1275,31 +1274,7 @@ def procesar_tareas_kickoff():
                 if not ejecutar_documentacion_para_item(location_kickoff, "KICKOFF"):
                     return False
                 return True
-            pyautogui.scroll(-30)
-            pausa(2)
 
-        # 2) OTH
-        print("❌ No se encontró Kickoff.png, buscando oth_planear1.png...")
-        for _ in range(2):
-            try:
-                location_oth = pyautogui.locateOnScreen(IMAGEN_OTH, confidence=CONFIDENCE)
-            except Exception:
-                location_oth = None
-
-            if location_oth:
-                print("✅ Se encontró oth_planear1.png")
-                if not abrir_item_y_preparar(location_oth):
-                    return False
-                if not ejecutar_documentacion_para_item(location_oth, "OTH"):
-                    return False
-                return True
-
-            pyautogui.scroll(-30)
-            pausa(2)
-
-        # 3) NOVEDADES (NORMAL O GRIS)
-        print("❌ Tampoco se encontró oth_planear1.png, buscando Kickoffnovedades (normal/gris)...")
-        for _ in range(2):
             location_nov = buscar_kickoff_novedades()
             if location_nov:
                 print("✅ Se encontró Kickoffnovedades (normal/gris)")
@@ -1309,8 +1284,22 @@ def procesar_tareas_kickoff():
                     return False
                 return True
 
-            pyautogui.scroll(-30)
-            pausa(2)
+            try:
+                location_oth = pyautogui.locateOnScreen(IMAGEN_OTH, confidence=CONFIDENCE)
+            except Exception:
+                location_oth = None
+
+            if location_oth:
+                print("✅ Se encontró oth_planear1.png (Planear con cliente)")
+                if not abrir_item_y_preparar(location_oth):
+                    return False
+                if not ejecutar_documentacion_para_item(location_oth, "OTH"):
+                    return False
+                return True
+
+            print(f"   ↳ Ninguno encontrado, scrolleando...")
+            pyautogui.scroll(-2)
+            pausa(3)
 
         print("❌ No se encontró Kickoff / OTH / Kickoffnovedades")
         try:
@@ -1342,8 +1331,8 @@ def ejecutar_flujo(necesita_login):
     pausa(2)
 
     if necesita_login:
-        user = os.environ.get("CRM_USER", "46381705").strip()
-        pwd = os.environ.get("CRM_PASS", "Haroa997**").strip()
+        user = os.environ.get("CRM_USER", "46381573").strip()
+        pwd = os.environ.get("CRM_PASS", "*Dairy136*").strip()
 
         if not user or not pwd:
             print("❌ Faltan credenciales. Configura CRM_USER y CRM_PASS en variables de entorno.")

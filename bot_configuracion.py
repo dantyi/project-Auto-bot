@@ -7,6 +7,9 @@ import os
 import openpyxl
 import pyperclip
 import win32clipboard
+import anthropic
+import base64
+import io
 
 # ==========================================
 # CONFIG
@@ -31,6 +34,7 @@ IMAGEN_EDITAR_INCIDENTE  = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stra
 IMAGEN_ASIGNAR_INCIDENTE = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\asignar_incidente.png"
 IMAGEN_AGREGAR           = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\agregar.png"
 IMAGEN_ACEPTAR           = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\aceptar.png"
+IMAGEN_ESTADO            = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\stratic\estado.png"
 
 EXCEL_PATH     = r"C:\Users\dell\Desktop\kickoff\project-Auto-bot\datos.xlsx"
 ESTADO_COLUMNA = "COMPLETADO"
@@ -153,6 +157,80 @@ def pausa(seg=1):
 def mostrar_escritorio():
     pyautogui.hotkey("win", "d")
     pausa(1)
+
+# ==========================================
+# CLAUDE - TOMA DE DECISIONES EN FALLAS
+# ==========================================
+_claude_client = None
+ANTHROPIC_API_KEY = "REDACTED_SEE_ENV"
+
+def get_claude_client():
+    global _claude_client
+    if _claude_client is None:
+        _claude_client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+    return _claude_client
+
+def consultar_claude(contexto):
+    """
+    Captura la pantalla actual y consulta a Claude para decidir qué hacer.
+    Retorna una de: CONTINUAR | REINTENTAR | CERRAR_DIALOGO | OTP_CERRADA | ERROR_FATAL
+    """
+    try:
+        print(f"🤖 Consultando Claude: {contexto[:80]}...")
+
+        img = pyautogui.screenshot()
+        buffer = io.BytesIO()
+        img.save(buffer, format="PNG")
+        img_b64 = base64.b64encode(buffer.getvalue()).decode()
+
+        client = get_claude_client()
+        response = client.messages.create(
+            model="claude-haiku-4-5",
+            max_tokens=50,
+            messages=[{
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image",
+                        "source": {
+                            "type": "base64",
+                            "media_type": "image/png",
+                            "data": img_b64
+                        }
+                    },
+                    {
+                        "type": "text",
+                        "text": (
+                            f"Eres un asistente de automatización CRM. "
+                            f"Contexto del problema: {contexto}\n\n"
+                            f"Analiza la pantalla y responde SOLO con una opción:\n"
+                            f"- CONTINUAR: la pantalla está bien, se puede continuar\n"
+                            f"- REINTENTAR: hay algo temporal bloqueando, esperar y reintentar\n"
+                            f"- CERRAR_DIALOGO: hay un popup o dialogo que hay que cerrar con ESC o Enter\n"
+                            f"- OTP_CERRADA: la OTP está cerrada y no permite cambios\n"
+                            f"- ERROR_FATAL: error irrecuperable\n\n"
+                            f"Responde SOLO la opción, sin explicación."
+                        )
+                    }
+                ]
+            }]
+        )
+
+        decision = response.content[0].text.strip().upper()
+        # Limpiar por si Claude añade texto extra
+        for opcion in ["CONTINUAR", "REINTENTAR", "CERRAR_DIALOGO", "OTP_CERRADA", "ERROR_FATAL"]:
+            if opcion in decision:
+                decision = opcion
+                break
+        else:
+            decision = "ERROR_FATAL"
+
+        print(f"🤖 Claude decidió: {decision}")
+        return decision
+
+    except Exception as e:
+        print(f"⚠ Error consultando Claude: {e}")
+        return "ERROR_FATAL"
 
 # ==========================================
 # BUSCAR / ABRIR / TRAER CRM
@@ -367,8 +445,12 @@ def detectar_flujo_y_maximizar():
 # ==========================================
 def guardar_crm():
     print("💾 Guardando en CRM...")
-    try:
-        loc = pyautogui.locateOnScreen(IMAGEN_GUARDAR, confidence=CONFIDENCE)
+    for intento in range(3):
+        try:
+            loc = pyautogui.locateOnScreen(IMAGEN_GUARDAR, confidence=CONFIDENCE)
+        except Exception:
+            loc = None
+
         if loc:
             pyautogui.click(loc)
             pausa(2)
@@ -378,11 +460,21 @@ def guardar_crm():
             pausa(1)
             print("✅ Guardado")
             return True
-        print("⚠ No se encontró guardar.png")
-        return False
-    except Exception as e:
-        print(f"⚠ Error guardando: {e}")
-        return False
+
+        print(f"⚠ No se encontró guardar.png (intento {intento + 1}/3)")
+        decision = consultar_claude("No se encontró el botón guardar en el CRM. ¿Qué hay en pantalla?")
+
+        if decision == "CERRAR_DIALOGO":
+            pyautogui.press("esc")
+            pausa(2)
+        elif decision == "REINTENTAR":
+            pausa(3)
+        else:
+            print(f"⚠ Claude: {decision} → no se puede guardar")
+            return False
+
+    print("⚠ guardar_crm falló tras 3 intentos")
+    return False
 
 # ==========================================
 # PEGAR TEXTO EN ANOTACIONES (CON LIMITE 900)
@@ -404,7 +496,18 @@ def pegar_texto_en_anotaciones(texto, location_item):
 
         if not loc_anot:
             print("⚠ No se encontró anotaciones.png")
-            return False
+            decision = consultar_claude("No se encontró el campo de anotaciones en la tarea del CRM.")
+            if decision == "REINTENTAR":
+                pausa(3)
+                try:
+                    loc_anot = pyautogui.locateOnScreen(IMAGEN_ANOTACIONES, confidence=CONFIDENCE)
+                except Exception:
+                    loc_anot = None
+            elif decision == "CERRAR_DIALOGO":
+                pyautogui.press("esc")
+                pausa(2)
+            if not loc_anot:
+                return False
 
         x, y = pyautogui.center(loc_anot)
         pyautogui.click(x + 20, y + 10)
@@ -483,7 +586,18 @@ def llenar_items_facturacion():
 
     if not loc:
         print("⚠ No se encontró FECHA_compromiso.png")
-        return False
+        decision = consultar_claude("No se encontró la sección de items de facturación (FECHA_compromiso) en el CRM.")
+        if decision == "REINTENTAR":
+            pausa(3)
+            try:
+                loc = pyautogui.locateOnScreen(IMAGEN_FECHA_COMPROMISO, confidence=CONFIDENCE)
+            except Exception:
+                loc = None
+        elif decision == "CERRAR_DIALOGO":
+            pyautogui.press("esc")
+            pausa(2)
+        if not loc:
+            return False
 
     x, y = pyautogui.center(loc)
     pyautogui.click(x + 450, y)
@@ -738,7 +852,20 @@ def procesar_configuracion():
 
     if not loc_config:
         print("⚠ No se encontró configuracion.png tras scrolls")
-        return False
+        decision = consultar_claude("No se encontró la tarea de CONFIGURACION en la lista de tareas del CRM después de varios scrolls.")
+        if decision == "REINTENTAR":
+            pausa(3)
+            pyautogui.scroll(-5)
+            pausa(2)
+            try:
+                loc_config = pyautogui.locateOnScreen(IMAGEN_CONFIGURACION, confidence=CONFIDENCE)
+            except Exception:
+                loc_config = None
+        elif decision == "CERRAR_DIALOGO":
+            pyautogui.press("esc")
+            pausa(2)
+        if not loc_config:
+            return False
 
     # 3. Doble click directo con loc_config ya encontrado
     pyautogui.click(loc_config)
@@ -757,7 +884,21 @@ def procesar_configuracion():
 
     if not loc_editar:
         print("⚠ No se encontró editar_tarea.png")
-        return False
+        decision = consultar_claude("No se encontró el botón editar tarea en el CRM. La OTP puede estar cerrada o la tarea no permite cambios.")
+        if decision == "OTP_CERRADA":
+            print("🤖 Claude: OTP cerrada → no se puede editar")
+            return False
+        elif decision == "REINTENTAR":
+            pausa(3)
+            try:
+                loc_editar = pyautogui.locateOnScreen(IMAGEN_EDITAR_TAREA, confidence=CONFIDENCE)
+            except Exception:
+                loc_editar = None
+        elif decision == "CERRAR_DIALOGO":
+            pyautogui.press("esc")
+            pausa(2)
+        if not loc_editar:
+            return False
 
     pyautogui.click(loc_editar)
     pausa(1)
@@ -790,8 +931,8 @@ def ejecutar_flujo(necesita_login):
     pausa(2)
 
     if necesita_login:
-        user = os.environ.get("CRM_USER", "46243463").strip()
-        pwd  = os.environ.get("CRM_PASS",  "AlaiaS02.*").strip()
+        user = os.environ.get("CRM_USER", "46381573").strip()
+        pwd  = os.environ.get("CRM_PASS",  "*Dairy136*").strip()
 
         if not user or not pwd:
             print("❌ Faltan credenciales.")
@@ -818,6 +959,49 @@ def ejecutar_flujo(necesita_login):
     ok3 = detectar_flujo_y_maximizar()
     ok4 = procesar_configuracion()
     ok5 = guardar_crm()
+
+    # Cerrar OT si corresponde
+    cerrar_ot = obtener_dato_de_columna("CERRAR_OTH")
+    cerrar_ot = str(cerrar_ot).strip().upper() if cerrar_ot else ""
+
+    if cerrar_ot == "SI":
+        print("🔒 Cerrando OT...")
+        try:
+            loc_estado = pyautogui.locateOnScreen(IMAGEN_ESTADO, confidence=CONFIDENCE)
+        except Exception:
+            loc_estado = None
+
+        if loc_estado:
+            x_est, y_est = pyautogui.center(loc_estado)
+            pyautogui.click(x_est + 200, y_est)
+            pausa(0.3)
+            pyautogui.write("CERRADO", interval=0.05)
+            pausa(0.2)
+            pyautogui.press("enter")
+            pausa(1)
+            print("✅ Estado CERRADO escrito")
+            guardar_crm()
+        else:
+            print("⚠ No se encontró estado.png")
+            decision = consultar_claude("No se encontró el campo de estado de la OTP para cambiarlo a CERRADO.")
+            if decision == "REINTENTAR":
+                pausa(3)
+                try:
+                    loc_estado = pyautogui.locateOnScreen(IMAGEN_ESTADO, confidence=CONFIDENCE)
+                    if loc_estado:
+                        x_est, y_est = pyautogui.center(loc_estado)
+                        pyautogui.click(x_est + 200, y_est)
+                        pausa(0.3)
+                        pyautogui.write("CERRADO", interval=0.05)
+                        pausa(0.2)
+                        pyautogui.press("enter")
+                        pausa(1)
+                        print("✅ Estado CERRADO escrito (reintento)")
+                        guardar_crm()
+                except Exception:
+                    pass
+    else:
+        print("⏭ CERRAR_OTH != SI → se salta cierre de OT")
 
     # Verificar OTP ocupada tras guardar
     try:

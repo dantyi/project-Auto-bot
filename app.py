@@ -93,43 +93,51 @@ def configuracion():
 def guardar():
     try:
         data = request.json
+
+        # Soporta una OTP sola {"otp":"..."} o múltiples {"otps":["...","..."]}
+        otps = data.get("otps") or [data.get("otp", "")]
+        otps = [str(o).strip() for o in otps if str(o).strip()]
+
+        if not otps:
+            return jsonify({"error": "Sin OTPs válidas"}), 400
+
         wb = load_workbook(EXCEL_FILE)
         ws = wb.active
 
-        # ✅ FILA ORIGINAL (NO SE TOCA) + ADICIONALES AL FINAL
-        fila = [
-            data.get("otp", ""),
-            data.get("factibilidad", ""),
-            data.get("correo_inicio", ""),
-            data.get("marcacion_oth", ""),
-            data.get("cod_resolucion", ""),
-            data.get("gerencia", ""),
-            data.get("fecha_compromiso", ""),
-            data.get("fecha_programacion", ""),
-            data.get("tipo_servicio", ""),
-            "",
+        for otp in otps:
+            fila = [
+                otp,
+                data.get("factibilidad", ""),
+                data.get("correo_inicio", ""),
+                data.get("marcacion_oth", ""),
+                data.get("cod_resolucion", ""),
+                data.get("gerencia", ""),
+                data.get("fecha_compromiso", ""),
+                data.get("fecha_programacion", ""),
+                data.get("tipo_servicio", ""),
+                "",
 
-            data.get("documentacion_item_facturacion", ""),  # "SI" / "NO"
-            data.get("cerrado_otp", ""),                     # "SI" / "NO"
-            data.get("cod_resolucion_otp", ""),              # TEXTO
-            data.get("modificar_otp", ""),                   # "SI" / "NO"
-            "KICKOFF",                                       # TIPO
-            "",                                              # DOCUMENTACION_UM
-            "",                                              # CERRAR_OTH
-            ""                                               # DOCUMENTACION
-        ]
+                data.get("documentacion_item_facturacion", ""),  # "SI" / "NO"
+                data.get("cerrado_otp", ""),                     # "SI" / "NO"
+                data.get("cod_resolucion_otp", ""),              # TEXTO
+                data.get("modificar_otp", ""),                   # "SI" / "NO"
+                "KICKOFF",                                       # TIPO
+                "",                                              # DOCUMENTACION_UM
+                "",                                              # CERRAR_OTH
+                ""                                               # DOCUMENTACION
+            ]
 
-        ws.append(fila)
-
-        nueva_fila_num = ws.max_row
-        for col in range(1, 19):  # 1..18
-            ws.cell(row=nueva_fila_num, column=col).alignment = Alignment(wrap_text=True)
+            ws.append(fila)
+            nueva_fila_num = ws.max_row
+            for col in range(1, 19):
+                ws.cell(row=nueva_fila_num, column=col).alignment = Alignment(wrap_text=True)
 
         wb.save(EXCEL_FILE)
 
         subprocess.Popen(["python", "bot.py"])
 
-        return jsonify({"mensaje": "Guardado y BOT ejecutado correctamente"})
+        n = len(otps)
+        return jsonify({"mensaje": f"{'1 OTP guardada' if n == 1 else f'{n} OTPs guardadas'} y BOT ejecutado correctamente"})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -180,6 +188,7 @@ def guardar_config():
         otp        = request.form.get("otp", "").strip()
         ot_tipo    = request.form.get("ot_tipo", "").strip()
         doc_config = request.form.get("doc_config", "").strip()
+        cerrar_ot  = request.form.get("cerrar_ot", "NO").strip()
 
         os.makedirs(OLE_FOLDER, exist_ok=True)
 
@@ -212,7 +221,7 @@ def guardar_config():
             "", "", "", "",       # cols 11-14
             "CONFIGURACION",      # TIPO
             "",                   # DOCUMENTACION_UM
-            "",                   # CERRAR_OTH
+            cerrar_ot,            # CERRAR_OTH
             doc_config,           # DOCUMENTACION
             "",                   # DOC_CONFIG
             ot_tipo,              # OT_TIPO

@@ -226,8 +226,13 @@
         <h2>Kick Off</h2>
 
         <form id="formulario">
-            <label for="otp">OTP</label>
-            <input type="text" id="otp" placeholder="Ingrese código OTP" required>
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                <label for="otp" style="margin-bottom:0;">OTP</label>
+                <button type="button" id="btn-agregar-otp" style="width:auto; padding:4px 12px; margin-top:0; font-size:1rem; border-radius:8px; background:var(--primary); color:white; border:none; cursor:pointer; font-weight:700; line-height:1;">+ OTP</button>
+            </div>
+            <div id="contenedor-otps">
+                <input type="text" class="otp-input" placeholder="Ingrese código OTP" required>
+            </div>
 
             <label for="factibilidad">DOCUMENTAR CHECK FACTIBILIDAD</label>
             <textarea id="factibilidad" placeholder="Ingrese toda la documentación de factibilidad..." required></textarea>
@@ -392,12 +397,40 @@
         switchCodOtp.checked = false;
     });
 
+    // Agregar OTP adicional
+    document.getElementById("btn-agregar-otp").addEventListener("click", function() {
+        const contenedor = document.getElementById("contenedor-otps");
+        const wrapper = document.createElement("div");
+        wrapper.style.cssText = "display:flex; align-items:center; gap:8px; margin-top:8px;";
+        const input = document.createElement("input");
+        input.type = "text";
+        input.className = "otp-input";
+        input.placeholder = "Ingrese código OTP";
+        input.required = true;
+        input.style.marginBottom = "0";
+        const btnElim = document.createElement("button");
+        btnElim.type = "button";
+        btnElim.innerText = "✕";
+        btnElim.style.cssText = "width:auto; padding:4px 10px; margin-top:0; font-size:1rem; border-radius:8px; background:#ef4444; color:white; border:none; cursor:pointer; flex-shrink:0;";
+        btnElim.onclick = () => contenedor.removeChild(wrapper);
+        wrapper.appendChild(input);
+        wrapper.appendChild(btnElim);
+        contenedor.appendChild(wrapper);
+    });
+
     // Envío del formulario (Mantiene tu estructura original)
     document.getElementById("formulario").addEventListener("submit", function(e) {
         e.preventDefault();
 
-        const datos = {
-            otp: document.getElementById("otp").value,
+        const otps = Array.from(document.querySelectorAll(".otp-input"))
+            .map(i => i.value.trim()).filter(v => v);
+
+        if (otps.length === 0) {
+            document.getElementById("mensaje").innerText = "Ingrese al menos un OTP.";
+            return;
+        }
+
+        const datosBase = {
             factibilidad: document.getElementById("factibilidad").value,
             correo_inicio: (function() {
                 const correo = document.getElementById("correo_inicio").value;
@@ -417,20 +450,23 @@
             tipo_servicio: document.getElementById("tipo_servicio").value
         };
 
-        const btn = e.target.querySelector("button");
+        const btn = e.target.querySelector("button[type='submit']");
         btn.innerText = "Enviando...";
         btn.disabled = true;
 
         fetch("/guardar", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify(datos)
+            body: JSON.stringify({ otps, ...datosBase })
         })
         .then(res => res.json())
         .then(data => {
             document.getElementById("mensaje").innerText = data.mensaje || "¡Guardado!";
             e.target.reset();
-            seccionFechas.style.display = 'none'; // Resetear visibilidad
+            // Dejar solo el primer input OTP
+            const contenedor = document.getElementById("contenedor-otps");
+            while (contenedor.children.length > 1) contenedor.removeChild(contenedor.lastChild);
+            seccionFechas.style.display = 'none';
         })
         .catch(err => {
             document.getElementById("mensaje").innerText = "Error al enviar.";

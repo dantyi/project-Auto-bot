@@ -185,6 +185,48 @@
             transform: none;
         }
 
+        .switch-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 12px;
+            background: #f0fdf4;
+            border: 1px solid var(--border-color);
+        }
+
+        .toggle { position: relative; width: 70px; height: 34px; }
+        .toggle input { display: none; }
+        .toggle-track {
+            position: absolute;
+            inset: 0;
+            border-radius: 50px;
+            background: #d1d5db;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .toggle-knob {
+            position: absolute;
+            top: 4px; left: 4px;
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            background: white;
+            transition: 0.3s;
+        }
+        .toggle-text {
+            position: absolute;
+            top: 50%; transform: translateY(-50%);
+            font-size: 10px; font-weight: 900;
+            color: white; pointer-events: none;
+        }
+        .toggle-text.on { left: 10px; opacity: 0; }
+        .toggle-text.off { right: 10px; opacity: 1; color: #4b5563; }
+        .toggle input:checked + .toggle-track { background: var(--primary); }
+        .toggle input:checked ~ .toggle-knob { left: 40px; }
+        .toggle input:checked ~ .toggle-text.on { opacity: 1; }
+        .toggle input:checked ~ .toggle-text.off { opacity: 0; }
+
         button[type="submit"] {
             width: 100%;
             padding: 15px;
@@ -284,6 +326,17 @@
             </div>
             <div class="file-list" id="fileList-saturacion"></div>
 
+            <div class="switch-row">
+                <div class="switch-label">CERRAR OT</div>
+                <label class="toggle">
+                    <input type="checkbox" id="cerrar_ot">
+                    <span class="toggle-track"></span>
+                    <span class="toggle-knob"></span>
+                    <span class="toggle-text on">SÍ</span>
+                    <span class="toggle-text off">NO</span>
+                </label>
+            </div>
+
             <button type="submit">Guardar Registro</button>
             <div id="mensaje"></div>
         </form>
@@ -350,6 +403,7 @@
         formData.append("otp",       document.getElementById("otp").value.trim());
         formData.append("ot_tipo",   document.getElementById("ot_tipo").value);
         formData.append("doc_config", document.getElementById("doc_config").value);
+        formData.append("cerrar_ot", document.getElementById("cerrar_ot").checked ? "SI" : "NO");
 
         secciones.forEach(({ id, campo }) => {
             archivos[id].forEach(f => formData.append(campo, f));
