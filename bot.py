@@ -8,6 +8,13 @@ import openpyxl
 import pyperclip
 import win32clipboard
 
+from telegram_notifier import (
+    notificar_inicio_cola,
+    notificar_ot_completada,
+    notificar_ot_fallida,
+    notificar_resumen_final,
+)
+
 # ==========================================
 # CONFIG
 # ==========================================
@@ -1395,10 +1402,14 @@ def ejecutar_flujo(necesita_login):
 
     
 
+    otp_procesada = obtener_otp_de_fila(fila_actual_excel) or str(fila_actual_excel)
+
     if ok1 and ok2 and ok3 and ok4 and ok5:
         marcar_fila_estado(fila_actual_excel, "COMPLETADO")
+        notificar_ot_completada(otp_procesada)
     else:
         marcar_fila_estado(fila_actual_excel, "ERROR")
+        notificar_ot_fallida(otp_procesada)
 
     last_activity_time = time.time()
     with lock:
@@ -1409,6 +1420,33 @@ def ejecutar_flujo(necesita_login):
 # ==========================================
 # INICIO (COLA POR EXCEL)
 # ==========================================
+def contar_pendientes_kickoff() -> int:
+    """Cuenta cuántas filas KICKOFF están pendientes en el Excel."""
+    try:
+        wb = openpyxl.load_workbook(EXCEL_PATH)
+        ws = wb.active
+        col_estado = col_otp = col_tipo = None
+        for idx, cell in enumerate(ws[1], 1):
+            if cell.value == ESTADO_COLUMNA: col_estado = idx
+            if cell.value == "OTP":          col_otp    = idx
+            if cell.value == "TIPO":         col_tipo   = idx
+        if not col_estado or not col_otp:
+            return 0
+        count = 0
+        for row in range(2, ws.max_row + 1):
+            estado   = ws.cell(row=row, column=col_estado).value
+            otp_val  = ws.cell(row=row, column=col_otp).value
+            tipo_val = ws.cell(row=row, column=col_tipo).value if col_tipo else None
+            pendiente  = (estado is None or str(estado).strip() == "")
+            tiene_otp  = (otp_val is not None and str(otp_val).strip() != "")
+            es_kickoff = (tipo_val is None or str(tipo_val).strip().upper() in ("", "KICKOFF"))
+            if pendiente and tiene_otp and es_kickoff:
+                count += 1
+        return count
+    except Exception:
+        return 0
+
+
 if __name__ == "__main__":
     if not adquirir_lock():
         print("🟡 Ya hay un bot corriendo. Este se cierra para respetar la cola por Excel.")
@@ -1416,6 +1454,7 @@ if __name__ == "__main__":
         try:
             necesita_login_global = abrir_crm_si_no_existe()
             inicio_espera_sin_pendientes = None
+            cola_notificada = False
 
             while True:
                 time.sleep(1)
@@ -1428,6 +1467,12 @@ if __name__ == "__main__":
 
                 if siguiente:
                     inicio_espera_sin_pendientes = None
+
+                    if not cola_notificada:
+                        total = contar_pendientes_kickoff()
+                        notificar_inicio_cola(total)
+                        cola_notificada = True
+
                     fila_actual_excel = siguiente
                     adquirir_cola_lock()
                     try:
@@ -1443,6 +1488,9 @@ if __name__ == "__main__":
 
                 if time.time() - inicio_espera_sin_pendientes >= INACTIVITY_LIMIT:
                     print("🔴 8 minutos sin actividad nueva. Cerrando CRM...")
+
+                    if cola_notificada:
+                        notificar_resumen_final()
 
                     try:
                         if crm_process:

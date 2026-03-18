@@ -46,5 +46,3 @@ desktop.ini
 # PostgreSQL dumps
 *.sql
 *.dump
-*.py
-app.py
