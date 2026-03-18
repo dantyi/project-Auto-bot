@@ -162,7 +162,7 @@ def mostrar_escritorio():
 # CLAUDE - TOMA DE DECISIONES EN FALLAS
 # ==========================================
 _claude_client = None
-ANTHROPIC_API_KEY = "REDACTED_SEE_ENV"
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 
 def get_claude_client():
     global _claude_client
